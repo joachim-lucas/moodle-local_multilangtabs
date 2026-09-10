@@ -1,0 +1,16 @@
+/* Style personnalisé pour les boutons de langue du plugin multilangtabs */
+.path-local-multilangtabs .multilangtabs-container,
+.multilangtabs-container {
+    margin-bottom: 0.375rem;
+    display: block;
+    width: 100%;
+}
+
+/* Équivalent propre d'un bouton "xs" (extra-small) sous Bootstrap */
+.multilangtabs-btn.btn-xs,
+.multilangtabs-bar .btn.multilangtabs-btn {
+    padding: 0.15rem 0.4rem;
+    font-size: 0.75rem;
+    line-height: 1.2;
+    border-radius: 0.2rem;
+}
