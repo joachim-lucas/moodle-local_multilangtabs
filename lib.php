@@ -81,6 +81,12 @@ function local_multilangtabs_before_footer() {
         'languages' => $languages_config,
         'defaultLang' => $default_lang,
         'format' => $format,
+        'inplaceTargets' => [
+            'format_topics-sectionname',
+            'format_topics-sectionnamenl',
+            'format_weeks-sectionname',
+            'format_weeks-sectionnamenl',
+        ],
     ];
 
     // Injection du script AMD uniquement si un filtre multilingue est actif.

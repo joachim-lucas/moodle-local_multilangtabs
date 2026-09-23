@@ -291,6 +291,138 @@ define(['jquery', 'core/log'], function($, log) {
         });
     }
 
+    /*
+     * Edit in place (core/inplace_editable) : noms de section, d'activité,
+     * etc. Ces champs n'existent pas dans le DOM au chargement : ils sont
+     * créés dynamiquement au clic sur le lien d'édition, puis détruits
+     * après enregistrement. On ne peut pas les cibler par sélecteur
+     * statique comme les textarea classiques : on observe le DOM.
+     */
+
+    // Liste des "component-itemtype" pour lesquels on active les onglets.
+    // Fournie par lib.php via init() ; vide = fonctionnalité désactivée.
+    let inplaceTargets = [];
+
+    function inplaceKey(component, itemtype) {
+        return component + '-' + itemtype;
+    }
+
+    function setupInplaceField($input, $mainelement) {
+        if ($input.data('multilangtabs-inplace-ready')) {
+            return;
+        }
+        $input.data('multilangtabs-inplace-ready', true);
+
+        const state = {
+            langData: parseMultilang($mainelement.attr('data-value')),
+            currentLang: defaultLang
+        };
+
+        // Moodle pré-remplit l'input avec la valeur brute complète
+        // (toutes langues confondues) : on la remplace avant que
+        // l'utilisateur ne la voie.
+        $input.val(state.langData[state.currentLang] || '');
+
+        const $tabBar = $('<span class="multilangtabs-inplace-bar"></span>');
+        languages.forEach(function(lang) {
+            $tabBar.append(
+                $('<button type="button"></button>')
+                    .text(lang.code.toUpperCase())
+                    .attr('data-lang', lang.code)
+                    .toggleClass('active', lang.code === state.currentLang)
+            );
+        });
+        $input.after($tabBar);
+
+        // Empêche le clic sur un onglet de faire perdre le focus à l'input
+        // (un blur pourrait annuler ou enregistrer prématurément l'édition
+        // selon la version de Moodle).
+        $tabBar.on('mousedown', 'button', function(e) {
+            e.preventDefault();
+        });
+
+        $tabBar.on('click', 'button', function(e) {
+            e.preventDefault();
+            const newLang = $(this).attr('data-lang');
+            if (newLang === state.currentLang) {
+                return;
+            }
+            state.langData[state.currentLang] = $input.val();
+            state.currentLang = newLang;
+            $input.val(state.langData[newLang] || '');
+            $tabBar.find('button').removeClass('active');
+            $(this).addClass('active');
+        });
+
+        // Reconstruit la valeur multilingue complète juste avant que le
+        // core ne la lise pour l'enregistrement. Branché directement sur
+        // l'input (pas délégué sur "body"), donc exécuté AVANT le handler
+        // natif de core/inplace_editable qui, lui, écoute au niveau body
+        // et appelle stopImmediatePropagation() sur le clic du lien
+        // d'édition (mais pas sur ce keydown, qui remonte normalement).
+        $input.on('keydown', function(e) {
+            if (e.key !== 'Enter' && e.keyCode !== 13) {
+                return;
+            }
+            state.langData[state.currentLang] = $input.val();
+            $input.val(buildMultilang(state.langData));
+        });
+    }
+
+    function scanInplaceEditables(node) {
+        const $node = $(node);
+
+        // Le nœud ajouté par la mutation peut être :
+        // - l'élément [data-inplaceeditable] lui-même,
+        // - un descendant qui en contient un (rare),
+        // - OU (le cas le plus fréquent en pratique) un descendant DE
+        //   l'élément [data-inplaceeditable], puisque Moodle réécrit le
+        //   contenu interne de cet élément existant plutôt que de le
+        //   remplacer entièrement. Il faut donc aussi chercher vers le
+        //   haut via closest(), sans quoi ce cas est systématiquement raté.
+        let $mainelements = $node.filter('[data-inplaceeditable]')
+            .add($node.find('[data-inplaceeditable]'))
+            .add($node.closest('[data-inplaceeditable]'));
+
+        $mainelements.each(function() {
+            const $mainelement = $(this);
+
+            if ($mainelement.attr('data-type') !== 'text') {
+                return; // On ignore select/toggle : pas de sens en multilingue.
+            }
+
+            const key = inplaceKey(
+                $mainelement.attr('data-component'),
+                $mainelement.attr('data-itemtype')
+            );
+            if (inplaceTargets.indexOf(key) === -1) {
+                return;
+            }
+
+            const $input = $mainelement.find('input');
+            if ($input.length) {
+                setupInplaceField($input, $mainelement);
+            }
+        });
+    }
+
+    function setupInplaceObserver() {
+        if (!window.MutationObserver) {
+            log.debug('multilangtabs: MutationObserver indisponible.');
+            return;
+        }
+
+        new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                mutation.addedNodes.forEach(function(node) {
+                    if (node.nodeType === 1) {
+                        scanInplaceEditables(node);
+                    }
+                });
+            });
+        }).observe(document.body, {childList: true, subtree: true});
+    }
+
 
     return {
         init: function(params) {
@@ -307,6 +439,13 @@ define(['jquery', 'core/log'], function($, log) {
                 }) && languages.length > 0) {
                     defaultLang = languages[0].code;
                 }
+            }
+            // Ce paramètre n'était pas lu auparavant : inplaceTargets
+            // restait vide en permanence et bloquait toute la
+            // fonctionnalité d'édition en place, quel que soit le
+            // contenu envoyé par lib.php.
+            if (params && params.inplaceTargets) {
+                inplaceTargets = params.inplaceTargets;
             }
 
             $(document).ready(function() {
@@ -330,6 +469,14 @@ define(['jquery', 'core/log'], function($, log) {
                         setupTabs($(this));
                     });
                     setupFormSubmit();
+
+                    // Cet appel manquait également : sans lui, aucun
+                    // observateur n'est jamais créé et le clic sur un
+                    // crayon d'édition en place ne déclenche rien côté
+                    // multilangtabs.
+                    if (inplaceTargets.length) {
+                        setupInplaceObserver();
+                    }
                 }, 400);
             });
         }
