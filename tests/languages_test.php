@@ -73,12 +73,14 @@ final class languages_test extends \advanced_testcase {
     }
 
     /**
-     * Test that the tabs open on the current user language.
+     * Test that the tabs open on the current user language when it is proposed.
      *
      * @covers ::get_default_code
      */
     public function test_get_default_code_uses_the_current_language(): void {
-        $this->assertSame('en', languages::get_default_code(['fr', 'en']));
+        $currentlanguage = current_language();
+
+        $this->assertSame($currentlanguage, languages::get_default_code([$currentlanguage, 'zz']));
     }
 
     /**
@@ -87,7 +89,7 @@ final class languages_test extends \advanced_testcase {
      * @covers ::get_default_code
      */
     public function test_get_default_code_falls_back_on_the_first_code(): void {
-        $this->assertSame('fr', languages::get_default_code(['fr', 'en']));
+        $this->assertSame('de', languages::get_default_code(['de', 'it']));
     }
 
     /**
