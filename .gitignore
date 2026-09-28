@@ -7,3 +7,6 @@ node_modules/
 # system
 .DS_Store
 Thumbs.db
+
+# opencode (outillage local, non versionné)
+.opencode/
