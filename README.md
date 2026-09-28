@@ -51,6 +51,13 @@ Alternatively, use [Moodle CLI](https://moodle.org/):
 php admin/cli/upgrade.php
 ```
 
+> [!IMPORTANT]
+> The tabs are injected by an output hook, and Moodle only knows about hook callbacks which are
+> declared in `db/hooks.php`. The list of those callbacks is cached, so **purge the caches** after
+> copying or updating the files, otherwise the plugin silently loads nothing: no tab, no error in the
+> browser console. The version bump of the plugin prompts the upgrade, which purges the caches for
+> you.
+
 ## Configuration
 
 Go to *Site administration > Plugins > Local plugins > Multi-language tabs* and tick the languages

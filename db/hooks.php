@@ -15,7 +15,10 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Version details for the multi-language tabs plugin.
+ * Hook callbacks for the multi-language tabs plugin.
+ *
+ * The output hooks are only dispatched to the callbacks declared here, so this
+ * file is what actually makes the plugin inject its AMD module in the pages.
  *
  * @package    local_multilangtabs
  * @copyright  2026 Multi-language tabs contributors
@@ -24,8 +27,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'local_multilangtabs';
-$plugin->version   = 2026092801; // AAAAMMJJXX, increment it on every change.
-$plugin->requires  = 2025040700; // Moodle 5.0, first release providing the output hooks used in db/hooks.php.
-$plugin->maturity  = MATURITY_BETA;
-$plugin->release   = '0.2.1';
+$callbacks = [
+    [
+        'hook' => \core\hook\output\before_footer_html_generation::class,
+        'callback' => \local_multilangtabs\hook_callbacks::class . '::before_footer_html_generation',
+    ],
+];
