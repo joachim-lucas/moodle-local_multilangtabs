@@ -30,7 +30,19 @@ $string['inplacetargets_desc'] = 'One target per line, as a "component-itemtype"
 $string['languages'] = 'Available languages';
 $string['languages_desc'] = 'Tick the languages to propose as tabs. When nothing is ticked, all installed language packs are proposed.';
 $string['pluginname'] = 'Multi-language tabs';
-$string['textfields'] = 'Plain text fields';
-$string['textfields_desc'] = 'Names of the plain text form elements to decorate with language tabs, separated
-    by commas, for instance "name, pagetitle". Every rich text editor is always decorated. Leave the field
-    empty to decorate all the plain text fields, which is the default.';
+$string['userexceptions_invalid'] = '{$a} is not a valid field name. Use the names of the form elements, such as name or pagetitle.';
+$string['userexcludedfields'] = 'Fields to exclude';
+$string['userexcludedfields_help'] = 'Names of the form elements you do not want the language tabs on, separated
+    by commas, for instance "idnumber, idnumber2". Leave the field empty to exclude nothing. An exclusion
+    always wins, whatever the inclusion lists say.';
+$string['userincludedfields'] = 'Fields to include';
+$string['userincludedfields_help'] = 'Names of the form elements you want the language tabs on even though they are
+    not rich text editors nor plain text fields, separated by commas, for instance "notes". Leave the field
+    empty to include nothing beyond the default fields.';
+$string['userprefs'] = 'Multi-language tabs';
+$string['userprefs_intro'] = 'Every rich text editor and every plain text field of the pages you edit is decorated with
+    language tabs. The two lists below are for the fields which have to escape that rule, in the pages of
+    your own environment, in a form of a plugin you use for a specific purpose, or simply in one form out
+    of all the others. The lists set on the site, by the administrator, are not listed here, and always
+    win over yours.';
+$string['userprefs_saved'] = 'Your exceptions have been saved.';

@@ -70,16 +70,39 @@ selection.
 Moodle keeps no registry of the fields displaying their value through a multilanguage filter, and the
 plugin builds no form itself: the fields are found on the rendered page, from the `data-fieldtype`
 attribute Moodle puts on every form element, which is the contract the core itself relies on to tell
-the types of fields apart. Two settings narrow down what gets decorated:
+the types of fields apart.
 
-* **Plain text fields**: names of the elements to decorate, separated by commas, for instance
-  `name, pagetitle`. The names are the ones of the form elements, which are visible in the URL of the
-  form and in the `name` attribute of the field. Every rich text editor is always decorated. When the
-  field is left empty, which is the default, all the plain text fields are decorated.
-* **In-place editable fields**: the `component-itemtype` targets decorated without opening a form,
-  one per line, for instance `format_topics-sectionname`. The field comes with the section and
-  activity names of the `format_topics` and `format_weeks` course formats. Clearing it and saving
-  the settings disables that support altogether.
+The general rule is that **every rich text editor and every plain text field of the page** is
+decorated, whatever the form it belongs to. The fields which have to escape that rule are the
+exceptions, and there are two levels of them.
+
+The site wide exceptions are set in the code rather than in the settings, in `classes/fields.php`,
+for the exceptions which are not a matter of administration but of development:
+
+```php
+// Never decorated, whatever the general rule and the inclusion below say. The course
+// identification number is the kind of field which has to be left alone site wide.
+public const EXCLUDED_FIELDS = ['idnumber'];
+
+// Decorated even though the general rule does not cover them, which is the list to use for the
+// form elements of another type, a plain textarea for instance.
+public const INCLUDED_FIELDS = ['notes'];
+```
+
+Each user has the same two lists for the pages they edit themselves, set from the *Multi-language
+tabs* page of the user menu. A field is decorated when the general rule covers it, or when an
+inclusion list names it, and when no exclusion list names it: **an exclusion always wins**, and the
+site wide exceptions win over the ones of the users.
+
+The names are those of the form elements, the ones the browser shows in the `name` attribute of the
+field, a composite value being named after its element, `intro` for the `intro[text]` editor.
+
+### In-place editable fields
+
+The fields edited in place, without opening a form, are set from the plugin settings, as
+`component-itemtype` targets, one per line, for instance `format_topics-sectionname`. The setting
+comes with the section and activity names of the `format_topics` and `format_weeks` course formats.
+Clearing it and saving the settings disables that support altogether.
 
 ## Known limitations
 
@@ -88,7 +111,8 @@ the types of fields apart. Two settings narrow down what gets decorated:
   ignored unless they are added to the setting above.
 * The filter is detected on the site as a whole, not per context: enabling it for a single course
   only is not enough for the tabs to appear.
-* Plain textarea form elements, as opposed to rich text editors, are not decorated.
+* Only rich text editors, plain text fields and the plain textareas named in an inclusion list are
+  decorated. The other types of form elements, selects for instance, are left alone.
 
 ## Uninstallation
 

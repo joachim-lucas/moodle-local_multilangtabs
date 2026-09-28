@@ -42,4 +42,22 @@ final class hook_callbacks_test extends \advanced_testcase {
             array_column($callbacks, 'callback')
         );
     }
+
+    /**
+     * Test that the callback adding the user preferences page to the user menu is registered.
+     *
+     * The core has no hook to add an entry to the user preferences, so the user menu is the
+     * only place the page can be offered from. Without that registration the page is reachable
+     * by its URL only, which no user knows.
+     */
+    public function test_callback_is_registered_for_the_user_menu_hook(): void {
+        $callbacks = \core\hook\manager::get_instance()->get_callbacks_for_hook(
+            \core_user\hook\extend_user_menu::class
+        );
+
+        $this->assertContains(
+            hook_callbacks::class . '::extend_user_menu',
+            array_column($callbacks, 'callback')
+        );
+    }
 }

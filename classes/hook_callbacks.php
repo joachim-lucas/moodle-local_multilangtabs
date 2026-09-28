@@ -17,6 +17,7 @@
 namespace local_multilangtabs;
 
 use core\hook\output\before_footer_html_generation;
+use core_user\hook\extend_user_menu;
 
 /**
  * Hook callbacks for the multi-language tabs plugin.
@@ -45,10 +46,29 @@ class hook_callbacks {
             'languages' => languages::get_tabs(),
             'defaultLang' => languages::get_default_code($codes),
             'format' => $format,
-            'textFields' => fields::get_textfield_names(),
+            'includedFields' => fields::get_included_field_names(),
+            'excludedFields' => fields::get_excluded_field_names(),
             'inplaceTargets' => fields::get_inplace_targets(),
         ];
 
         $hook->renderer->get_page()->requires->js_call_amd('local_multilangtabs/editor', 'init', [$params]);
+    }
+
+    /**
+     * Add the page letting each user exclude fields from their own language tabs.
+     *
+     * The core has no hook to add an entry to the user preferences, so the page is offered
+     * from the user menu instead.
+     *
+     * @param extend_user_menu $hook
+     */
+    public static function extend_user_menu(extend_user_menu $hook): void {
+        $item = new \stdClass();
+        $item->itemtype = 'link';
+        $item->url = new \moodle_url('/local/multilangtabs/userprefs.php');
+        $item->title = get_string('userprefs', 'local_multilangtabs');
+        $item->titleidentifier = 'local_multilangtabs/userprefs';
+
+        $hook->add_navitem($item);
     }
 }

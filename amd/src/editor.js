@@ -183,7 +183,7 @@ define(['jquery', 'core/log'], function($, log) {
      *
      * Moodle appends the subfield to the name of the fields holding a composite value, as in
      * "intro[text]" for an editor, so it has to be removed to get the name of the element, "intro"
-     * here, which is the name the administrator types in the settings.
+     * here, which is the name typed in the settings.
      *
      * @param {JQuery} $element Field of the form.
      * @returns {String} The name of the element, empty when it cannot be determined.
@@ -195,6 +195,28 @@ define(['jquery', 'core/log'], function($, log) {
     }
 
     /**
+     * Tell whether a field is part of the interface of the editor rather than a field of the form.
+     *
+     * @param {JQuery} $element Field of the form.
+     * @returns {Boolean} True when the field belongs to TinyMCE.
+     */
+    function isEditorInternal($element) {
+        return !!$element.closest('.tox').length;
+    }
+
+    /**
+     * Tell whether a field is excluded from the tabs by one of the exclusion lists.
+     *
+     * An exclusion always wins over an inclusion, whichever list it comes from.
+     *
+     * @param {JQuery} $element Field of the form.
+     * @returns {Boolean} True when the field must be left alone.
+     */
+    function isExcluded($element) {
+        return excludedFieldNames.indexOf(elementName($element)) !== -1;
+    }
+
+    /**
      * Collect the fields of the page which have to be decorated with language tabs.
      *
      * Moodle describes every form element it renders with a data-fieldtype attribute, both on the
@@ -203,24 +225,31 @@ define(['jquery', 'core/log'], function($, log) {
      * list of ids and names maintained here covers every form of every plugin, and keeps working
      * when a form is renamed or a new one is added upstream.
      *
-     * Every editor is decorated. Plain text fields are decorated as a whole, unless the
-     * administrator restricted them to a list of element names.
+     * The general rule is that every editor and every plain text field is decorated. The fields
+     * of any other type, a plain textarea for instance, are only decorated when an inclusion list
+     * names them. No field is decorated when an exclusion list names it.
      *
      * @returns {JQuery} The fields to decorate.
      */
     function findFormFields() {
-        const $editors = $('.felement[data-fieldtype="editor"] textarea')
-            // TinyMCE adds textareas of its own to its interface, which are not form fields.
+        const $fields = $('.felement[data-fieldtype="editor"] textarea, ' +
+            '.felement[data-fieldtype="text"] input[type="text"]')
             .filter(function() {
-                return !$(this).closest('.tox').length;
+                return !isEditorInternal($(this)) && !isExcluded($(this));
             });
 
-        const $texts = $('.felement[data-fieldtype="text"] input[type="text"]')
-            .filter(function() {
-                return !textFieldNames.length || textFieldNames.indexOf(elementName($(this))) !== -1;
-            });
+        if (includedFieldNames.length) {
+            $fields.add($('.felement[data-fieldtype="textarea"] textarea')
+                .filter(function() {
+                    const $element = $(this);
 
-        return $editors.add($texts);
+                    return !isEditorInternal($element) &&
+                        includedFieldNames.indexOf(elementName($element)) !== -1 &&
+                        !isExcluded($element);
+                }));
+        }
+
+        return $fields;
     }
 
 
@@ -366,9 +395,13 @@ define(['jquery', 'core/log'], function($, log) {
     // provided by the hook callback through init(); empty = feature disabled.
     let inplaceTargets = [];
 
-    // Names of the plain text form elements the tabs are enabled for. It is
-    // provided by the hook callback through init(); empty = all of them.
-    let textFieldNames = [];
+    // Names of the form elements decorated even though the general rule does not
+    // cover them. It is provided by the hook callback through init().
+    let includedFieldNames = [];
+
+    // Names of the form elements never decorated, which win over the inclusions. It
+    // is provided by the hook callback through init().
+    let excludedFieldNames = [];
 
     /**
      * Build the key identifying an inplace editable target.
@@ -538,9 +571,13 @@ define(['jquery', 'core/log'], function($, log) {
             if (params && params.inplaceTargets) {
                 inplaceTargets = params.inplaceTargets;
             }
-            // Without this list, every plain text field is decorated.
-            if (params && params.textFields) {
-                textFieldNames = params.textFields;
+            // Both lists hold the exceptions of the site and the ones of the current
+            // user, already merged and deduplicated by the hook callback.
+            if (params && params.includedFields) {
+                includedFieldNames = params.includedFields;
+            }
+            if (params && params.excludedFields) {
+                excludedFieldNames = params.excludedFields;
             }
 
             $(document).ready(function() {
