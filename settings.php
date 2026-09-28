@@ -27,6 +27,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+use local_multilangtabs\fields;
+
 if ($hassiteconfig) {
     $settings = new admin_settingpage(
         'local_multilangtabs',
@@ -52,6 +54,20 @@ if ($hassiteconfig) {
             get_string('languages_desc', 'local_multilangtabs'),
             $defaults,
             $choices
+        ));
+
+        $settings->add(new admin_setting_configtextarea(
+            'local_multilangtabs/textfields',
+            get_string('textfields', 'local_multilangtabs'),
+            get_string('textfields_desc', 'local_multilangtabs'),
+            ''
+        ));
+
+        $settings->add(new admin_setting_configtextarea(
+            'local_multilangtabs/inplacetargets',
+            get_string('inplacetargets', 'local_multilangtabs'),
+            get_string('inplacetargets_desc', 'local_multilangtabs'),
+            implode(PHP_EOL, fields::DEFAULT_INPLACE_TARGETS)
         ));
     }
 

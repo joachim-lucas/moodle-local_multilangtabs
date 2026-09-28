@@ -24,6 +24,13 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['inplacetargets'] = 'In-place editable fields';
+$string['inplacetargets_desc'] = 'One target per line, as a "component-itemtype" pair, for instance
+    format_topics-sectionname. Leave the field empty to disable the language tabs on the fields edited in place.';
 $string['languages'] = 'Available languages';
 $string['languages_desc'] = 'Tick the languages to propose as tabs. When nothing is ticked, all installed language packs are proposed.';
 $string['pluginname'] = 'Multi-language tabs';
+$string['textfields'] = 'Plain text fields';
+$string['textfields_desc'] = 'Names of the plain text form elements to decorate with language tabs, separated
+    by commas, for instance "name, pagetitle". Every rich text editor is always decorated. Leave the field
+    empty to decorate all the plain text fields, which is the default.';

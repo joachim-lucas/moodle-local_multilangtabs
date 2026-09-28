@@ -179,6 +179,52 @@ define(['jquery', 'core/log'], function($, log) {
 
 
     /**
+     * Return the name of the form element a field belongs to.
+     *
+     * Moodle appends the subfield to the name of the fields holding a composite value, as in
+     * "intro[text]" for an editor, so it has to be removed to get the name of the element, "intro"
+     * here, which is the name the administrator types in the settings.
+     *
+     * @param {JQuery} $element Field of the form.
+     * @returns {String} The name of the element, empty when it cannot be determined.
+     */
+    function elementName($element) {
+        const name = $element.attr('name') || '';
+
+        return name.replace(/\[[^\]]*\]$/, '');
+    }
+
+    /**
+     * Collect the fields of the page which have to be decorated with language tabs.
+     *
+     * Moodle describes every form element it renders with a data-fieldtype attribute, both on the
+     * rich text editors and on the plain text fields, and the core relies on that attribute itself
+     * to tell the types of fields apart. Selecting the fields on that attribute rather than on a
+     * list of ids and names maintained here covers every form of every plugin, and keeps working
+     * when a form is renamed or a new one is added upstream.
+     *
+     * Every editor is decorated. Plain text fields are decorated as a whole, unless the
+     * administrator restricted them to a list of element names.
+     *
+     * @returns {JQuery} The fields to decorate.
+     */
+    function findFormFields() {
+        const $editors = $('.felement[data-fieldtype="editor"] textarea')
+            // TinyMCE adds textareas of its own to its interface, which are not form fields.
+            .filter(function() {
+                return !$(this).closest('.tox').length;
+            });
+
+        const $texts = $('.felement[data-fieldtype="text"] input[type="text"]')
+            .filter(function() {
+                return !textFieldNames.length || textFieldNames.indexOf(elementName($(this))) !== -1;
+            });
+
+        return $editors.add($texts);
+    }
+
+
+    /**
      * Set the language tab bar up for a single field.
      *
      * @param {JQuery} $element Field to decorate.
@@ -319,6 +365,10 @@ define(['jquery', 'core/log'], function($, log) {
     // List of the component-itemtype pairs the tabs are enabled for. It is
     // provided by the hook callback through init(); empty = feature disabled.
     let inplaceTargets = [];
+
+    // Names of the plain text form elements the tabs are enabled for. It is
+    // provided by the hook callback through init(); empty = all of them.
+    let textFieldNames = [];
 
     /**
      * Build the key identifying an inplace editable target.
@@ -488,25 +538,16 @@ define(['jquery', 'core/log'], function($, log) {
             if (params && params.inplaceTargets) {
                 inplaceTargets = params.inplaceTargets;
             }
+            // Without this list, every plain text field is decorated.
+            if (params && params.textFields) {
+                textFieldNames = params.textFields;
+            }
 
             $(document).ready(function() {
-                const selector = [
-                    'textarea[id*="intro"]',
-                    'textarea[id="id_summary_editor"]',
-                    'textarea[name*="intro"]',
-                    'textarea[name="page"]',
-                    'textarea[name^="page["]',
-                    'textarea.editor',
-                    'input[type="text"][id="id_name"]',
-                    'input[type="text"][id="id_pagetitle"]',
-                    'input[type="text"][id*="id_"]',
-                    'input[type="text"][name="name"]'
-                ].join(', ');
-
                 // Short delay to let Moodle instantiate its DOM elements
                 // before looking for them in order to decorate them.
                 setTimeout(function() {
-                    $(selector).each(function() {
+                    findFormFields().each(function() {
                         setupTabs($(this));
                     });
                     setupFormSubmit();

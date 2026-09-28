@@ -65,12 +65,30 @@ to propose as tabs. When nothing is ticked, every installed language pack is pro
 the current user language, or on the first ticked language when the user language is not part of the
 selection.
 
+### Fields decorated with tabs
+
+Moodle keeps no registry of the fields displaying their value through a multilanguage filter, and the
+plugin builds no form itself: the fields are found on the rendered page, from the `data-fieldtype`
+attribute Moodle puts on every form element, which is the contract the core itself relies on to tell
+the types of fields apart. Two settings narrow down what gets decorated:
+
+* **Plain text fields**: names of the elements to decorate, separated by commas, for instance
+  `name, pagetitle`. The names are the ones of the form elements, which are visible in the URL of the
+  form and in the `name` attribute of the field. Every rich text editor is always decorated. When the
+  field is left empty, which is the default, all the plain text fields are decorated.
+* **In-place editable fields**: the `component-itemtype` targets decorated without opening a form,
+  one per line, for instance `format_topics-sectionname`. The field comes with the section and
+  activity names of the `format_topics` and `format_weeks` course formats. Clearing it and saving
+  the settings disables that support altogether.
+
 ## Known limitations
 
 * The language tabs of core inplace editable fields cover the section and activity names of the
-  `format_topics` and `format_weeks` course formats. Other inplace editable fields are ignored.
+  `format_topics` and `format_weeks` course formats by default. Other inplace editable fields are
+  ignored unless they are added to the setting above.
 * The filter is detected on the site as a whole, not per context: enabling it for a single course
   only is not enough for the tabs to appear.
+* Plain textarea form elements, as opposed to rich text editors, are not decorated.
 
 ## Uninstallation
 
@@ -99,7 +117,7 @@ npx grunt amd --root=local/multilangtabs
 The generated files `amd/build/editor.min.js` and its sourcemap `amd/build/editor.min.js.map` are
 committed: Moodle does not build them at runtime, so they have to stay in sync with `amd/src/editor.js`.
 
-Unit tests live in `tests/` and cover the language resolution. Run them with:
+Unit tests live in `tests/` and cover the language resolution and the fields decorated. Run them with:
 
 ```sh
 vendor/bin/phpunit --testsuite local_multilangtabs_testsuite

@@ -27,18 +27,6 @@ use core\hook\output\before_footer_html_generation;
  */
 class hook_callbacks {
     /**
-     * Inplace editable targets decorated with language tabs, as component-itemtype pairs.
-     *
-     * @var string[]
-     */
-    public const INPLACE_TARGETS = [
-        'format_topics-sectionname',
-        'format_topics-sectionnamenl',
-        'format_weeks-sectionname',
-        'format_weeks-sectionnamenl',
-    ];
-
-    /**
      * Load the AMD module turning multilanguage fields into a set of language tabs.
      *
      * Nothing is loaded when no multilanguage filter is available on the site, or when no language
@@ -57,7 +45,8 @@ class hook_callbacks {
             'languages' => languages::get_tabs(),
             'defaultLang' => languages::get_default_code($codes),
             'format' => $format,
-            'inplaceTargets' => self::INPLACE_TARGETS,
+            'textFields' => fields::get_textfield_names(),
+            'inplaceTargets' => fields::get_inplace_targets(),
         ];
 
         $hook->renderer->get_page()->requires->js_call_amd('local_multilangtabs/editor', 'init', [$params]);
