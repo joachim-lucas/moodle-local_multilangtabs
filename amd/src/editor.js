@@ -356,11 +356,13 @@ define(['jquery', 'core/log'], function($, log) {
 
         const $tabBar = $('<span class="multilangtabs-inplace-bar"></span>');
         languages.forEach(function(lang) {
+            const activeClass = (lang.code === state.currentLang) ?
+                'btn-primary' : 'btn-outline-primary';
             $tabBar.append(
-                $('<button type="button"></button>')
+                $('<button type="button" class="btn multilangtabs-btn ' +
+                    activeClass + '"></button>')
                     .text(lang.code.toUpperCase())
                     .attr('data-lang', lang.code)
-                    .toggleClass('active', lang.code === state.currentLang)
             );
         });
         $input.after($tabBar);
@@ -381,8 +383,12 @@ define(['jquery', 'core/log'], function($, log) {
             state.langData[state.currentLang] = $input.val();
             state.currentLang = newLang;
             $input.val(state.langData[newLang] || '');
-            $tabBar.find('button').removeClass('active');
-            $(this).addClass('active');
+            $tabBar.find('button')
+                .removeClass('btn-primary')
+                .addClass('btn-outline-primary');
+            $(this)
+                .removeClass('btn-outline-primary')
+                .addClass('btn-primary');
         });
 
         // Reconstruit la valeur multilingue complète juste avant que le
