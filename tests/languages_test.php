@@ -31,6 +31,7 @@ final class languages_test extends \advanced_testcase {
      * @covers ::get_codes
      */
     public function test_get_codes_from_settings(): void {
+        $this->resetAfterTest();
         set_config('languages', 'fr,en', 'local_multilangtabs');
 
         $this->assertSame(['fr', 'en'], languages::get_codes());
@@ -42,6 +43,7 @@ final class languages_test extends \advanced_testcase {
      * @covers ::get_codes
      */
     public function test_get_codes_ignores_spaces_and_empty_items(): void {
+        $this->resetAfterTest();
         set_config('languages', ' fr , , en ,', 'local_multilangtabs');
 
         $this->assertSame(['fr', 'en'], languages::get_codes());
@@ -53,6 +55,7 @@ final class languages_test extends \advanced_testcase {
      * @covers ::get_codes
      */
     public function test_get_codes_falls_back_on_installed_translations(): void {
+        $this->resetAfterTest();
         set_config('languages', '', 'local_multilangtabs');
 
         $this->assertSame(array_keys(get_string_manager()->get_list_of_translations()), languages::get_codes());
@@ -64,6 +67,7 @@ final class languages_test extends \advanced_testcase {
      * @covers ::get_tabs
      */
     public function test_get_tabs(): void {
+        $this->resetAfterTest();
         set_config('languages', 'fr,en', 'local_multilangtabs');
 
         $this->assertSame([

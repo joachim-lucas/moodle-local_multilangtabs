@@ -112,12 +112,7 @@ jobs:
 
       - name: PHPUnit tests
         if: ${{ !cancelled() }}
-        run: |
-          set -o pipefail
-          moodle-plugin-ci phpunit --fail-on-warning 2>&1 | tr -d '\r' > /tmp/phpunit.log || {
-            echo "::error title=PHPUnit::$(tail -c 4000 /tmp/phpunit.log | tr '\n' '|' | sed 's/%/%25/g')"
-            exit 1
-          }
+        run: moodle-plugin-ci phpunit --fail-on-warning
 
       - name: Behat features
         id: behat
