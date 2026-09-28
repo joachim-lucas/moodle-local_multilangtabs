@@ -25,11 +25,13 @@ define(['jquery', 'core/log'], function($, log) {
 
 
     /**
-     * Extrait le contenu par langue depuis un texte contenant soit des
-     * balises <span lang="xx" class="multilang">, soit des balises
-     * {mlang xx}...{mlang}. Les deux formats sont toujours reconnus en
-     * lecture, quel que soit outputFormat, pour rester rétrocompatible
-     * avec du contenu déjà enregistré dans l'autre format.
+     * Extract the content of each language from a text containing either <span lang="xx"
+     * class="multilang"> tags or {mlang xx}...{mlang} tags. Both formats are always recognised when
+     * reading, whatever the output format is, to stay backward compatible with content which was
+     * already saved in the other format.
+     *
+     * @param {String} text Raw content of the field.
+     * @returns {Object} Content of each language, indexed by language code.
      */
     function parseMultilang(text) {
         const result = {};
@@ -79,8 +81,11 @@ define(['jquery', 'core/log'], function($, log) {
 
 
     /**
-     * Reconstruit le contenu multilingue complet dans le format
-     * effectivement attendu par le filtre actif côté serveur.
+     * Rebuild the complete multilanguage content in the format actually expected by the filter
+     * which is enabled on the server.
+     *
+     * @param {Object} data Content of each language, indexed by language code.
+     * @returns {String} The value to store in the field.
      */
     function buildMultilang(data) {
         let output = '';
@@ -105,8 +110,12 @@ define(['jquery', 'core/log'], function($, log) {
 
 
     /**
-     * Récupère le contenu depuis TinyMCE si l'éditeur est initialisé pour
-     * cet élément, sinon depuis le champ brut (textarea/input).
+     * Read the content from TinyMCE when the editor is initialised for this element, from the raw
+     * field otherwise.
+     *
+     * @param {JQuery} $element Field to read.
+     * @param {String} elementId Id of the field.
+     * @returns {String} Current content of the field.
      */
     function getContent($element, elementId) {
         if (window.tinymce) {
@@ -120,7 +129,11 @@ define(['jquery', 'core/log'], function($, log) {
 
 
     /**
-     * Définit le contenu dans TinyMCE si disponible, sinon dans le champ brut.
+     * Write the content to TinyMCE when it is available, to the raw field otherwise.
+     *
+     * @param {JQuery} $element Field to write.
+     * @param {String} elementId Id of the field.
+     * @param {String} val Content to write.
      */
     function setContent($element, elementId, val) {
         if (window.tinymce) {
@@ -135,10 +148,13 @@ define(['jquery', 'core/log'], function($, log) {
 
 
     /**
-     * Attend que TinyMCE soit initialisé pour cet élément, avec une
-     * limite de tentatives : évite une boucle de setTimeout infinie
-     * sur les champs qui n'utilisent finalement pas TinyMCE (éditeur
-     * texte brut, Atto, etc.).
+     * Wait for TinyMCE to be initialised for the given field, with a limited number of attempts, to
+     * avoid an endless setTimeout loop on the fields which do not use TinyMCE at all (plain text
+     * editor, Atto editor, and so on).
+     *
+     * @param {String} elementId Id of the field.
+     * @param {Function} onReady Called with the editor once it is available.
+     * @param {Number} attempt Current number of attempts.
      */
     function waitForEditor(elementId, onReady, attempt) {
         attempt = attempt || 0;
@@ -163,7 +179,9 @@ define(['jquery', 'core/log'], function($, log) {
 
 
     /**
-     * Met en place la barre d'onglets de langue pour un champ donné.
+     * Set the language tab bar up for a single field.
+     *
+     * @param {JQuery} $element Field to decorate.
      */
     function setupTabs($element) {
         const elementId = $element.attr('id');
@@ -303,10 +321,23 @@ define(['jquery', 'core/log'], function($, log) {
     // Fournie par lib.php via init() ; vide = fonctionnalité désactivée.
     let inplaceTargets = [];
 
+    /**
+     * Build the key identifying an inplace editable target.
+     *
+     * @param {String} component Component of the target.
+     * @param {String} itemtype Item type of the target.
+     * @returns {String} The key of the target.
+     */
     function inplaceKey(component, itemtype) {
         return component + '-' + itemtype;
     }
 
+    /**
+     * Set the language tab bar up for a single inplace editable field.
+     *
+     * @param {JQuery} $input Input holding the value being edited.
+     * @param {JQuery} $mainelement Inplace editable element being decorated.
+     */
     function setupInplaceField($input, $mainelement) {
         if ($input.data('multilangtabs-inplace-ready')) {
             return;
@@ -369,6 +400,11 @@ define(['jquery', 'core/log'], function($, log) {
         });
     }
 
+    /**
+     * Decorate the supported inplace editables found in a freshly added node.
+     *
+     * @param {Node} node Node which was just added to the page.
+     */
     function scanInplaceEditables(node) {
         const $node = $(node);
 
@@ -406,6 +442,9 @@ define(['jquery', 'core/log'], function($, log) {
         });
     }
 
+    /**
+     * Watch the page for the inplace editable elements created on the fly by core.
+     */
     function setupInplaceObserver() {
         if (!window.MutationObserver) {
             log.debug('multilangtabs: MutationObserver indisponible.');

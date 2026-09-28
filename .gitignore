@@ -10,3 +10,10 @@ Thumbs.db
 
 # opencode (outillage local, non versionné)
 .opencode/
+
+# local tooling caches
+/.phplint.cache/
+/.phpunit.result.cache
+/.php-cs-fixer.cache
+*.bak
+*.swp
