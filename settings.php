@@ -34,11 +34,11 @@ if ($hassiteconfig) {
     );
 
     if ($ADMIN->fulltree) {
-        // La liste des choix est construite Ã  partir des packs de langue rÃ©ellement installÃ©s sur la
-        // plateforme (ex: 'fr' => 'FranÃ§ais (fr)').
+        // The choices are built from the language packs really installed on the
+        // platform (for instance 'fr' => 'French (fr)').
         $choices = get_string_manager()->get_list_of_translations();
 
-        // Langues cochÃ©es par dÃ©faut si l'administrateur n'a encore rien choisi.
+        // Languages checked by default when the administrator has not chosen any yet.
         $defaults = [];
         foreach (['fr', 'en'] as $code) {
             if (isset($choices[$code])) {
@@ -57,7 +57,7 @@ if ($hassiteconfig) {
 
     $ADMIN->add('localplugins', $settings);
 
-    // EmpÃªche Moodle d'ajouter une seconde fois une page de rÃ©glages gÃ©nÃ©rique pour ce plugin
-    // (comportement par dÃ©faut pour les plugins locaux sans settings.php).
+    // Stops Moodle from adding a second, generic settings page for this plugin,
+    // which is the default behaviour for local plugins without a settings.php.
     $settings = null;
 }

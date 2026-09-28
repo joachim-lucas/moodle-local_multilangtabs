@@ -1,26 +1,26 @@
 define(['jquery', 'core/log'], function($, log) {
 
-    // Langues et format de repli, écrasés par init(params) si fourni par lib.php.
+    // Fallback languages and format, overridden by init(params) when the hook provides them.
     let languages = [
         {code: 'fr', label: 'Français'},
         {code: 'en', label: 'English'}
     ];
     let defaultLang = 'fr';
 
-    // 'span'  -> compatible filter_multilang (legacy)
-    // 'mlang2' -> compatible filter_multilang2, recommandé pour du contenu
-    //             multi-paragraphes.
+    // 'span'  -> compatible with filter_multilang (legacy).
+    // 'mlang2' -> compatible with filter_multilang2, recommended for content
+    //             made of several paragraphs.
     let outputFormat = 'span';
 
     /*
-     * Registre global de tous les champs multilingues de la page.
-     * Indispensable pour que le handler de soumission du formulaire
-     * (déclaré une seule fois, en dehors de setupTabs) puisse accéder
-     * à l'état de CHAQUE champ au moment de l'envoi.
+     * Global registry of all the multilanguage fields of the page.
+     * Required so that the form submit handler, which is declared only once
+     * outside of setupTabs, can reach the state of EVERY field when the form
+     * is submitted.
      */
     let fields = {};
 
-    // Empêche une double soumission native lors de l'interception du submit.
+    // Prevents a double native submission when the submit event is intercepted.
     let submitting = false;
 
 
@@ -68,10 +68,10 @@ define(['jquery', 'core/log'], function($, log) {
             }
         }
 
-        // Aucune syntaxe multilingue détectée : on considère que tout le
-        // contenu existant est dans la langue par défaut, plutôt que de
-        // le perdre silencieusement (cas d'un champ déjà rempli avant
-        // l'activation du plugin).
+        // No multilanguage syntax found: assume that the whole existing
+        // content belongs to the default language, rather than silently
+        // losing it, which would happen with a field filled in before the
+        // plugin was enabled.
         if (!foundAny && text.trim() !== '') {
             result[defaultLang] = text;
         }
@@ -166,14 +166,14 @@ define(['jquery', 'core/log'], function($, log) {
             return;
         }
 
-        // ~5 secondes maximum (50 tentatives x 100ms).
+        // About 5 seconds at most (50 attempts x 100ms).
         if (attempt < 50) {
             setTimeout(function() {
                 waitForEditor(elementId, onReady, attempt + 1);
             }, 100);
         } else {
-            log.debug('multilangtabs: TinyMCE non détecté pour ' + elementId +
-                ', poursuite en mode champ brut.');
+            log.debug('multilangtabs: TinyMCE not found for ' + elementId +
+                ', falling back to plain text mode.');
         }
     }
 
@@ -225,15 +225,15 @@ define(['jquery', 'core/log'], function($, log) {
             $element.before($container);
         }
 
-        // Affiche la langue par défaut dès que TinyMCE (s'il est utilisé)
-        // est prêt ; le second appel couvre le cas où l'éditeur n'est pas
-        // utilisé du tout (champ texte brut), pour un affichage immédiat.
+        // Display the default language as soon as TinyMCE, when it is used, is
+        // ready; the second call covers the case where no editor is used at all
+        // (plain text field), to display it right away.
         waitForEditor(elementId, function() {
             setContent($element, elementId, field.langData[field.currentLang]);
         });
         setContent($element, elementId, field.langData[field.currentLang]);
 
-        // Changement d'onglet de langue.
+        // Language tab change.
         $tabBar.on('click', 'button', function(e) {
             e.preventDefault();
             const newLang = $(this).attr('data-lang');
@@ -241,8 +241,8 @@ define(['jquery', 'core/log'], function($, log) {
                 return;
             }
 
-            // Sauvegarder le contenu de la langue qu'on quitte AVANT de
-            // changer currentLang, sinon on écrase le mauvais slot.
+            // Save the content of the language being left BEFORE changing
+            // currentLang, otherwise the wrong slot gets overwritten.
             field.langData[field.currentLang] = getContent($element, elementId);
 
             field.currentLang = newLang;
@@ -260,11 +260,11 @@ define(['jquery', 'core/log'], function($, log) {
 
 
     /**
-     * Intercepte la soumission du formulaire pour reconstituer, pour
-     * CHAQUE champ multilingue enregistré, le contenu complet (toutes
-     * langues confondues) avant l'envoi natif. Sans ce handler, seul
-     * le contenu de l'onglet actif au moment du clic serait envoyé et
-     * les autres langues saisies seraient perdues.
+     * Intercept the form submission to rebuild, for EVERY registered
+     * multilanguage field, the full content (all languages at once) before
+     * the native submission happens. Without this handler, only the content of
+     * the tab active at click time would be sent, and every other language
+     * typed in would be lost.
      */
     function setupFormSubmit() {
         $('form').each(function() {
@@ -280,11 +280,10 @@ define(['jquery', 'core/log'], function($, log) {
                     return;
                 }
 
-                // On a besoin de lire le contenu courant de TinyMCE
-                // (getContent) pour chaque champ avant de reconstruire
-                // la valeur finale : on bloque le submit natif le temps
-                // de faire ce travail, puis on relance nous-mêmes la
-                // soumission.
+                // The current TinyMCE content (getContent) has to be read for
+                // every field before the final value is rebuilt: the native
+                // submit is blocked while doing so, then the form is submitted
+                // again by this module.
                 e.preventDefault();
 
                 Object.keys(fields).forEach(function(elementId) {
@@ -293,12 +292,12 @@ define(['jquery', 'core/log'], function($, log) {
                         return;
                     }
 
-                    // Capture le contenu actuellement affiché (langue active).
+                    // Capture the content currently displayed (active language).
                     field.langData[field.currentLang] =
                         getContent(field.$element, elementId);
 
-                    // Reconstruit le contenu multilingue complet et l'écrit
-                    // dans le champ, pour que Moodle le lise à la soumission.
+                    // Rebuild the full multilanguage content and write it into
+                    // the field, so that Moodle reads it on submission.
                     const fullContent = buildMultilang(field.langData);
                     field.$element.val(fullContent);
                 });
@@ -310,15 +309,15 @@ define(['jquery', 'core/log'], function($, log) {
     }
 
     /*
-     * Edit in place (core/inplace_editable) : noms de section, d'activité,
-     * etc. Ces champs n'existent pas dans le DOM au chargement : ils sont
-     * créés dynamiquement au clic sur le lien d'édition, puis détruits
-     * après enregistrement. On ne peut pas les cibler par sélecteur
-     * statique comme les textarea classiques : on observe le DOM.
+     * Edit in place (core/inplace_editable): section names, activity names,
+     * etc. Those fields are not in the DOM on load: they are created
+     * dynamically when the edit link is clicked, then destroyed once saved.
+     * They cannot be targeted by a static selector like the regular textareas,
+     * so the DOM has to be observed instead.
      */
 
-    // Liste des "component-itemtype" pour lesquels on active les onglets.
-    // Fournie par lib.php via init() ; vide = fonctionnalité désactivée.
+    // List of the component-itemtype pairs the tabs are enabled for. It is
+    // provided by the hook callback through init(); empty = feature disabled.
     let inplaceTargets = [];
 
     /**
@@ -349,9 +348,8 @@ define(['jquery', 'core/log'], function($, log) {
             currentLang: defaultLang
         };
 
-        // Moodle pré-remplit l'input avec la valeur brute complète
-        // (toutes langues confondues) : on la remplace avant que
-        // l'utilisateur ne la voie.
+        // Moodle pre-fills the input with the full raw value, all languages at
+        // once: replace it before the user gets a chance to see it.
         $input.val(state.langData[state.currentLang] || '');
 
         const $tabBar = $('<span class="multilangtabs-inplace-bar"></span>');
@@ -367,9 +365,9 @@ define(['jquery', 'core/log'], function($, log) {
         });
         $input.after($tabBar);
 
-        // Empêche le clic sur un onglet de faire perdre le focus à l'input
-        // (un blur pourrait annuler ou enregistrer prématurément l'édition
-        // selon la version de Moodle).
+        // Prevent a click on a tab from taking the focus away from the input: a
+        // blur could cancel or save the edition too early, depending on the
+        // Moodle version.
         $tabBar.on('mousedown', 'button', function(e) {
             e.preventDefault();
         });
@@ -391,12 +389,12 @@ define(['jquery', 'core/log'], function($, log) {
                 .addClass('btn-primary');
         });
 
-        // Reconstruit la valeur multilingue complète juste avant que le
-        // core ne la lise pour l'enregistrement. Branché directement sur
-        // l'input (pas délégué sur "body"), donc exécuté AVANT le handler
-        // natif de core/inplace_editable qui, lui, écoute au niveau body
-        // et appelle stopImmediatePropagation() sur le clic du lien
-        // d'édition (mais pas sur ce keydown, qui remonte normalement).
+        // Rebuild the full multilanguage value just before core reads it to
+        // save it. Bound directly on the input, not delegated on "body", so it
+        // runs BEFORE the native handler of core/inplace_editable, which
+        // listens on body and calls stopImmediatePropagation() on the click
+        // of the edit link, but not on this keydown, which bubbles up
+        // normally.
         $input.on('keydown', function(e) {
             if (e.key !== 'Enter' && e.keyCode !== 13) {
                 return;
@@ -414,14 +412,14 @@ define(['jquery', 'core/log'], function($, log) {
     function scanInplaceEditables(node) {
         const $node = $(node);
 
-        // Le nœud ajouté par la mutation peut être :
-        // - l'élément [data-inplaceeditable] lui-même,
-        // - un descendant qui en contient un (rare),
-        // - OU (le cas le plus fréquent en pratique) un descendant DE
-        //   l'élément [data-inplaceeditable], puisque Moodle réécrit le
-        //   contenu interne de cet élément existant plutôt que de le
-        //   remplacer entièrement. Il faut donc aussi chercher vers le
-        //   haut via closest(), sans quoi ce cas est systématiquement raté.
+        // The node added by the mutation can be:
+        // - the [data-inplaceeditable] element itself,
+        // - a descendant containing one (rare),
+        // - OR (by far the most common case in practice) a descendant OF the
+        //   [data-inplaceeditable] element, since Moodle rewrites the inner
+        //   content of that existing element instead of replacing it entirely.
+        // closest() is therefore needed as well, otherwise this case is
+        // systematically missed.
         let $mainelements = $node.filter('[data-inplaceeditable]')
             .add($node.find('[data-inplaceeditable]'))
             .add($node.closest('[data-inplaceeditable]'));
@@ -430,7 +428,7 @@ define(['jquery', 'core/log'], function($, log) {
             const $mainelement = $(this);
 
             if ($mainelement.attr('data-type') !== 'text') {
-                return; // On ignore select/toggle : pas de sens en multilingue.
+                return; // Ignore select/toggle: it makes no sense for multilanguage content.
             }
 
             const key = inplaceKey(
@@ -453,7 +451,7 @@ define(['jquery', 'core/log'], function($, log) {
      */
     function setupInplaceObserver() {
         if (!window.MutationObserver) {
-            log.debug('multilangtabs: MutationObserver indisponible.');
+            log.debug('multilangtabs: MutationObserver is not available.');
             return;
         }
 
@@ -485,10 +483,8 @@ define(['jquery', 'core/log'], function($, log) {
                     defaultLang = languages[0].code;
                 }
             }
-            // Ce paramètre n'était pas lu auparavant : inplaceTargets
-            // restait vide en permanence et bloquait toute la
-            // fonctionnalité d'édition en place, quel que soit le
-            // contenu envoyé par lib.php.
+            // Without this list of targets, the edit in place support stays
+            // disabled for the whole page.
             if (params && params.inplaceTargets) {
                 inplaceTargets = params.inplaceTargets;
             }
@@ -507,18 +503,16 @@ define(['jquery', 'core/log'], function($, log) {
                     'input[type="text"][name="name"]'
                 ].join(', ');
 
-                // Petit délai pour laisser Moodle instancier ses éléments DOM
-                // avant qu'on cherche à les décorer.
+                // Short delay to let Moodle instantiate its DOM elements
+                // before looking for them in order to decorate them.
                 setTimeout(function() {
                     $(selector).each(function() {
                         setupTabs($(this));
                     });
                     setupFormSubmit();
 
-                    // Cet appel manquait également : sans lui, aucun
-                    // observateur n'est jamais créé et le clic sur un
-                    // crayon d'édition en place ne déclenche rien côté
-                    // multilangtabs.
+                    // The observer is only worth setting up when this site
+                    // supports at least one inplace editable target.
                     if (inplaceTargets.length) {
                         setupInplaceObserver();
                     }

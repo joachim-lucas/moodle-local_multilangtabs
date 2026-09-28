@@ -1,11 +1,11 @@
-/* Style personnalisé pour les boutons de langue du plugin multilangtabs */
+/* Custom style for the language buttons of the multilangtabs plugin. */
 .multilangtabs-container {
     margin-bottom: 0.375rem;
     display: block;
     width: 100%;
 }
 
-/* Équivalent propre d'un bouton "xs" (extra-small) sous Bootstrap */
+/* Clean equivalent of an "xs" (extra-small) Bootstrap button. */
 .multilangtabs-btn.btn-xs,
 .multilangtabs-bar .btn.multilangtabs-btn,
 .multilangtabs-inplace-bar .btn.multilangtabs-btn {
@@ -15,8 +15,8 @@
     border-radius: 0.2rem;
 }
 
-/* La barre d'édition en place suit le champ qu'elle décore : elle reste donc
-   dans le flux du texte, contrairement à la barre des formulaires. */
+/* The edit in place bar follows the field it decorates: unlike the form bars, it
+   therefore stays in the text flow. */
 .multilangtabs-inplace-bar {
     display: inline-flex;
     gap: 0.125rem;
