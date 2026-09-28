@@ -147,9 +147,10 @@ final class languages_test extends \advanced_testcase {
      * filters is kept in a request cache, which has to be dropped for the change to be visible.
      */
     protected function disable_all_filters(): void {
+        \filter_manager::reset_caches();
         foreach (array_keys(filter_get_global_states()) as $filter) {
             filter_set_global_state($filter, TEXTFILTER_DISABLED);
         }
-        \cache_helper::reset_caches();
+        \filter_manager::reset_caches();
     }
 }
