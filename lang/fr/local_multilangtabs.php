@@ -39,5 +39,13 @@ $string['inplacetargets_desc'] = 'Une cible par ligne, sous la forme « composan
     format_topics-sectionname. Laissez le champ vide pour désactiver les onglets sur les champs modifiables sur place.';
 $string['languages'] = 'Langues disponibles';
 $string['languages_desc'] = 'Cochez les langues à proposer sous forme d’onglets. Si aucune langue n’est cochée, tous les packs de langue installés sont proposés.';
+$string['multilangfilter_content'] = 'Le filtre {$a->filter} ne s’applique qu’aux contenus, pas aux titres ni aux
+    autres textes courts. Passez-le sur « Contenus et titres » dans la page {$a->filterspage}, sinon des titres comme
+    le nom du cours ou celui des activités peuvent continuer d’afficher les marques multilingues brutes.';
+$string['multilangfilter_off'] = 'Aucun filtre multilingue n’est actif sur ce site. Sans le filtre « multilang » ni
+    le filtre « multilang2 », les marques multilingues ne sont pas interprétées et les onglets ne fonctionnent pas.
+    Activez l’un d’eux dans la page {$a->filterspage}.';
+$string['multilangfilter_ok'] = 'Tout est en ordre : un filtre multilingue est actif et s’applique aux contenus et
+    aux titres, les onglets fonctionnent donc comme prévu.';
 $string['pluginname'] = 'Onglets multilingues';
 $string['privacy:metadata'] = 'Le plugin Onglets multilingues ne stocke aucune donnée personnelle.';

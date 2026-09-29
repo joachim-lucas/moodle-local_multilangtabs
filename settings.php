@@ -27,6 +27,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+use local_multilangtabs\admin_setting_filterstatus;
 use local_multilangtabs\fields;
 
 if ($hassiteconfig) {
@@ -36,6 +37,9 @@ if ($hassiteconfig) {
     );
 
     if ($ADMIN->fulltree) {
+        // Warn the administrator when no multilanguage filter can interpret the marks on the site.
+        $settings->add(new admin_setting_filterstatus());
+
         // The choices are built from the language packs really installed on the
         // platform (for instance 'fr' => 'French (fr)').
         $choices = get_string_manager()->get_list_of_translations();
