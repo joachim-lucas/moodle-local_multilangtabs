@@ -26,7 +26,7 @@ Supported fields:
 
 ## Requirements
 
-* Moodle 5.0 or later.
+* Moodle 4.5 or later.
 * A multilanguage filter must be installed and enabled on the site, otherwise the plugin stays
   inactive by design and loads no JavaScript at all:
   * [multilang](https://moodle.org/plugins/?q=multilang) (filter_multilang), or

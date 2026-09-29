@@ -32,8 +32,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # The plugin requires Moodle 5.0. The matrix is kept on a single Moodle branch because the
-        # AMD build produced by grunt depends on the npm toolchain shipped with that branch.
+        # The plugin requires Moodle 4.5. The AMD build produced by grunt depends on the npm
+        # toolchain shipped with each branch, so the 4.5 combos are kept on PHP 8.3 for speed.
         include:
           - php: '8.3'
             moodle-branch: MOODLE_502_STABLE
@@ -46,6 +46,12 @@ jobs:
             database: pgsql
           - php: '8.4'
             moodle-branch: MOODLE_502_STABLE
+            database: mariadb
+          - php: '8.3'
+            moodle-branch: MOODLE_405_STABLE
+            database: pgsql
+          - php: '8.3'
+            moodle-branch: MOODLE_405_STABLE
             database: mariadb
 
     steps:
