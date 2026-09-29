@@ -91,99 +91,95 @@ final class fields_test extends \advanced_testcase {
     }
 
     /**
-     * Test that a user with no exception set excludes nothing, which keeps the general rule.
+     * Test that no exception is set by default, which keeps the general rule.
+     *
+     * The lists of the constants are empty, and the settings not saved: get_config() returns
+     * false, which leaves the lists of the code untouched rather than replacing them.
      *
      * @covers ::get_excluded_field_names
      * @covers ::get_included_field_names
      */
     public function test_no_exception_by_default(): void {
         $this->resetAfterTest();
-        $this->setUser($this->getDataGenerator()->create_user());
 
         $this->assertSame([], fields::get_excluded_field_names());
         $this->assertSame([], fields::get_included_field_names());
     }
 
     /**
-     * Test that the lists of a user are read from their preferences.
+     * Test that the exclusions are read from the setting.
      *
      * @covers ::get_excluded_field_names
-     * @covers ::get_included_field_names
      */
-    public function test_user_exceptions(): void {
+    public function test_exclusions_from_setting(): void {
         $this->resetAfterTest();
-        $user = $this->getDataGenerator()->create_user();
-        $this->setUser($user);
-
-        set_user_preference(fields::USER_EXCLUDED_FIELDS_PREFERENCE, 'idnumber, idnumber2', $user->id);
-        set_user_preference(fields::USER_INCLUDED_FIELDS_PREFERENCE, 'notes', $user->id);
+        set_config('excludedfields', 'idnumber, idnumber2', 'local_multilangtabs');
 
         $this->assertSame(['idnumber', 'idnumber2'], fields::get_excluded_field_names());
+    }
+
+    /**
+     * Test that the inclusions are read from the setting.
+     *
+     * @covers ::get_included_field_names
+     */
+    public function test_inclusions_from_setting(): void {
+        $this->resetAfterTest();
+        set_config('includedfields', 'notes', 'local_multilangtabs');
+
         $this->assertSame(['notes'], fields::get_included_field_names());
     }
 
     /**
-     * Test that the exceptions of a user are their own, and do not leak to the other users.
+     * Test that a setting saved empty excludes nothing.
      *
      * @covers ::get_excluded_field_names
      */
-    public function test_user_exceptions_are_not_shared(): void {
+    public function test_an_empty_setting_excludes_nothing(): void {
         $this->resetAfterTest();
-        $generator = $this->getDataGenerator();
-        $first = $generator->create_user();
-        $second = $generator->create_user();
+        set_config('excludedfields', '', 'local_multilangtabs');
 
-        set_user_preference(fields::USER_EXCLUDED_FIELDS_PREFERENCE, 'idnumber', $first->id);
-
-        $this->assertSame(['idnumber'], fields::get_excluded_field_names($first->id));
-        $this->assertSame([], fields::get_excluded_field_names($second->id));
+        $this->assertSame([], fields::get_excluded_field_names());
     }
 
     /**
-     * Test that a field both included and excluded by a user is left out, an exclusion winning.
+     * Test that the names set in the settings are added to the ones set in the code.
+     *
+     * The lists set in the constants always apply, whatever the setting holds, so the merge
+     * of the two sources keeps the coded names first even though they are empty here.
      *
      * @covers ::get_excluded_field_names
      * @covers ::get_included_field_names
      */
-    public function test_exclusion_and_inclusion_are_both_returned(): void {
+    public function test_the_setting_is_merged_with_the_code(): void {
         $this->resetAfterTest();
-        $user = $this->getDataGenerator()->create_user();
-        $this->setUser($user);
-
-        set_user_preference(fields::USER_INCLUDED_FIELDS_PREFERENCE, 'notes', $user->id);
-        set_user_preference(fields::USER_EXCLUDED_FIELDS_PREFERENCE, 'notes', $user->id);
-
-        // Both lists are reported as they are entered, the precedence between them being
-        // applied by the AMD module which is the only place the fields are known.
-        $this->assertSame(['notes'], fields::get_included_field_names());
-        $this->assertSame(['notes'], fields::get_excluded_field_names());
-    }
-
-    /**
-     * Test that the site wide exceptions and the ones of the current user are merged.
-     *
-     * The site wide lists are empty by default, so the merge of the two sources is checked
-     * against a user preference only: that is the shape a site wide list has to keep, a list
-     * of names entered in the same constants.
-     *
-     * @covers ::get_excluded_field_names
-     * @covers ::get_included_field_names
-     */
-    public function test_site_and_user_exceptions_are_merged(): void {
-        $this->resetAfterTest();
-        $user = $this->getDataGenerator()->create_user();
-        $this->setUser($user);
-
-        set_user_preference(fields::USER_EXCLUDED_FIELDS_PREFERENCE, 'idnumber', $user->id);
-        set_user_preference(fields::USER_INCLUDED_FIELDS_PREFERENCE, 'notes', $user->id);
+        set_config('excludedfields', 'idnumber, notes', 'local_multilangtabs');
+        set_config('includedfields', 'notes', 'local_multilangtabs');
 
         $this->assertSame(
-            array_merge(fields::EXCLUDED_FIELDS, ['idnumber']),
+            array_merge(fields::EXCLUDED_FIELDS, ['idnumber', 'notes']),
             fields::get_excluded_field_names()
         );
         $this->assertSame(
             array_merge(fields::INCLUDED_FIELDS, ['notes']),
             fields::get_included_field_names()
         );
+    }
+
+    /**
+     * Test that a field both included and excluded is left out, an exclusion winning.
+     *
+     * @covers ::get_excluded_field_names
+     * @covers ::get_included_field_names
+     */
+    public function test_exclusion_and_inclusion_are_both_returned(): void {
+        $this->resetAfterTest();
+        set_config('includedfields', 'notes', 'local_multilangtabs');
+        set_config('excludedfields', 'notes', 'local_multilangtabs');
+
+        // Both lists are reported as they are entered, the precedence between them being
+        // applied by the AMD module which is the only place the fields are known.
+        $this->assertSame(['notes'], fields::get_included_field_names());
+        $this->assertSame(['notes'], fields::get_excluded_field_names());
     }
 }

@@ -63,7 +63,8 @@ php admin/cli/upgrade.php
 Go to *Site administration > Plugins > Local plugins > Multi-language tabs* and tick the languages
 to propose as tabs. When nothing is ticked, every installed language pack is proposed. Tabs open on
 the current user language, or on the first ticked language when the user language is not part of the
-selection.
+selection. The page also holds the *Fields to include* / *Fields to exclude* lists, described below,
+and the *In-place editable fields* list.
 
 ### Fields decorated with tabs
 
@@ -76,11 +77,11 @@ The general rule is that **every rich text editor and every plain text field of 
 decorated, whatever the form it belongs to. The fields which have to escape that rule are the
 exceptions, and there are two levels of them.
 
-The site wide exceptions are set in the code rather than in the settings, in `classes/fields.php`,
-for the exceptions which are not a matter of administration but of development:
+The first level is set in the code rather than in the settings, in `classes/fields.php`, for the
+exceptions which are not a matter of administration but of development:
 
 ```php
-// Never decorated, whatever the general rule and the inclusion below say. The course
+// Never decorated, whatever the general rule and the inclusion lists say. The course
 // identification number is the kind of field which has to be left alone site wide.
 public const EXCLUDED_FIELDS = ['idnumber'];
 
@@ -89,10 +90,13 @@ public const EXCLUDED_FIELDS = ['idnumber'];
 public const INCLUDED_FIELDS = ['notes'];
 ```
 
-Each user has the same two lists for the pages they edit themselves, set from the *Multi-language
-tabs* page of the user menu. A field is decorated when the general rule covers it, or when an
-inclusion list names it, and when no exclusion list names it: **an exclusion always wins**, and the
-site wide exceptions win over the ones of the users.
+The second level is the two textareas at the bottom of the plugin settings, *Fields to include* and
+*Fields to exclude*, with one name per line or separated by commas, `idnumber`, `notes`. What is set
+there is **added to the lists of the code, which always apply**: the settings cannot lift an
+exclusion written in `classes/fields.php`.
+
+A field is decorated when the general rule covers it, or when an inclusion list names it, and when no
+exclusion list names it: **an exclusion always wins**, whatever the level it comes from.
 
 The names are those of the form elements, the ones the browser shows in the `name` attribute of the
 field, a composite value being named after its element, `intro` for the `intro[text]` editor.

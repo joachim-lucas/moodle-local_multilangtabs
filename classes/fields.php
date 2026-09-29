@@ -28,9 +28,10 @@ namespace local_multilangtabs;
  * The policy is one general rule, every rich text editor and every plain text field of the
  * page, narrowed down by exceptions coming from two levels:
  *
- * - the site wide exceptions below, which are set in this file and are meant to be edited
- *   by whoever maintains the code, not from the settings;
- * - the exceptions of the user, which each user sets for themselves.
+ * - the exceptions below, which are set in this file and always apply, as they are a matter
+ *   of development rather than of administration;
+ * - the exceptions the administrator adds from the plugin settings, which apply to the whole
+ *   site as well and are added to the ones below rather than replacing them.
  *
  * A field is decorated when the general rule covers it, or when an inclusion list names it,
  * and when no exclusion list names it. An exclusion therefore always wins over an inclusion.
@@ -53,9 +54,9 @@ class fields {
     ];
 
     /**
-     * Site wide exclusions: fields which are never decorated, whatever the general rule and the
-     * inclusions say. To keep a field untouched on every page of the site, add its name here,
-     * for instance to leave an identification number out of the tabs:
+     * Exclusions set in the code, which always apply whatever the settings hold. To keep a
+     * field untouched on every page of the site, add its name here, for instance to leave an
+     * identification number out of the tabs:
      *
      *     public const EXCLUDED_FIELDS = ['idnumber'];
      *
@@ -67,10 +68,9 @@ class fields {
     public const EXCLUDED_FIELDS = [];
 
     /**
-     * Site wide inclusions: fields which are decorated even though the general rule does not
-     * cover them. The general rule covers the rich text editors and the plain text fields, so
-     * this is the list to use for the form elements of another type, a plain textarea for
-     * instance, or for the fields of a particular form only:
+     * Inclusions set in the code, which always apply whatever the settings hold. The general
+     * rule covers the rich text editors and the plain text fields, so this is the list to use
+     * for the form elements of another type, a plain textarea for instance:
      *
      *     public const INCLUDED_FIELDS = ['notes'];
      *
@@ -80,20 +80,6 @@ class fields {
      * @var string[]
      */
     public const INCLUDED_FIELDS = [];
-
-    /**
-     * Name of the user preference holding the fields the user excludes from the tabs.
-     *
-     * @var string
-     */
-    public const USER_EXCLUDED_FIELDS_PREFERENCE = 'local_multilangtabs_excludedfields';
-
-    /**
-     * Name of the user preference holding the fields the user includes in the tabs.
-     *
-     * @var string
-     */
-    public const USER_INCLUDED_FIELDS_PREFERENCE = 'local_multilangtabs_includedfields';
 
     /**
      * Return the inplace editable targets to decorate, as selected by the administrator.
@@ -118,52 +104,47 @@ class fields {
     /**
      * Return the names of the fields to exclude from the tabs on every page of the site.
      *
-     * @param int|null $userid User the exclusions are read for, current user when null.
+     * The list of the code comes first, then the one of the settings, so that the settings
+     * cannot be mistaken for a way to lift an exclusion written in the code.
+     *
      * @return string[] Element names, e.g. ['idnumber'].
      */
-    public static function get_excluded_field_names(?int $userid = null): array {
-        return array_values(array_unique(array_merge(
-            self::EXCLUDED_FIELDS,
-            self::get_user_field_names(self::USER_EXCLUDED_FIELDS_PREFERENCE, $userid)
-        )));
+    public static function get_excluded_field_names(): array {
+        return self::merge_with_setting(self::EXCLUDED_FIELDS, 'excludedfields');
     }
 
     /**
      * Return the names of the fields to decorate even though the general rule does not cover them.
      *
-     * @param int|null $userid User the inclusions are read for, current user when null.
      * @return string[] Element names, e.g. ['notes'].
      */
-    public static function get_included_field_names(?int $userid = null): array {
-        return array_values(array_unique(array_merge(
-            self::INCLUDED_FIELDS,
-            self::get_user_field_names(self::USER_INCLUDED_FIELDS_PREFERENCE, $userid)
-        )));
+    public static function get_included_field_names(): array {
+        return self::merge_with_setting(self::INCLUDED_FIELDS, 'includedfields');
     }
 
     /**
-     * Return the list of field names a user entered in their own settings.
+     * Add the names entered by the administrator to a list of names set in the code.
      *
-     * The list is stored as a raw string, the way a textarea stores it. An unset preference
-     * gives an empty list, which is also what an empty list means: no exception of that kind.
+     * The setting is a textarea, so its value is split the same way, and an absent setting,
+     * which get_config() reports as false, leaves the list of the code untouched.
      *
-     * @param string $preference Name of the user preference holding the list.
-     * @param int|null $userid User the list is read for, current user when null.
-     * @return string[] Element names, in the order they were entered.
+     * @param string[] $codednames Names set in the constants of this class.
+     * @param string $setting Name of the setting holding the names to add.
+     * @return string[] Names, in order, without duplicates.
      */
-    private static function get_user_field_names(string $preference, ?int $userid = null): array {
-        $value = get_user_preferences($preference, null, $userid);
-        if (empty($value)) {
-            return [];
+    private static function merge_with_setting(array $codednames, string $setting): array {
+        $value = get_config('local_multilangtabs', $setting);
+        if ($value === false) {
+            return array_values(array_unique($codednames));
         }
 
-        return self::parse_list($value);
+        return array_values(array_unique(array_merge($codednames, self::parse_list($value))));
     }
 
     /**
      * Split a raw list of values separated by commas, spaces or line breaks.
      *
-     * @param mixed $value Raw list, as stored in a setting or in a user preference.
+     * @param mixed $value Raw list, as stored in a setting.
      * @return string[] Non empty items only, in the order they were entered.
      */
     public static function parse_list($value): array {

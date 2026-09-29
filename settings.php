@@ -62,6 +62,20 @@ if ($hassiteconfig) {
             get_string('inplacetargets_desc', 'local_multilangtabs'),
             implode(PHP_EOL, fields::DEFAULT_INPLACE_TARGETS)
         ));
+
+        $settings->add(new admin_setting_configtextarea(
+            'local_multilangtabs/includedfields',
+            get_string('includedfields', 'local_multilangtabs'),
+            get_string('includedfields_desc', 'local_multilangtabs'),
+            ''
+        ));
+
+        $settings->add(new admin_setting_configtextarea(
+            'local_multilangtabs/excludedfields',
+            get_string('excludedfields', 'local_multilangtabs'),
+            get_string('excludedfields_desc', 'local_multilangtabs'),
+            ''
+        ));
     }
 
     $ADMIN->add('localplugins', $settings);
