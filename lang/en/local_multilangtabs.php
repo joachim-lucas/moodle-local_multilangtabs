@@ -39,3 +39,4 @@ $string['inplacetargets_desc'] = 'One target per line, as a "component-itemtype"
 $string['languages'] = 'Available languages';
 $string['languages_desc'] = 'Tick the languages to propose as tabs. When nothing is ticked, all installed language packs are proposed.';
 $string['pluginname'] = 'Multi-language tabs';
+$string['privacy:metadata'] = 'The multi-language tabs plugin does not store any personal data.';

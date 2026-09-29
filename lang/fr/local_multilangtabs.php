@@ -38,5 +38,6 @@ $string['inplacetargets'] = 'Champs modifiables sur place';
 $string['inplacetargets_desc'] = 'Une cible par ligne, sous la forme « composant-type », par exemple
     format_topics-sectionname. Laissez le champ vide pour désactiver les onglets sur les champs modifiables sur place.';
 $string['languages'] = 'Langues disponibles';
-$string['languages_desc'] = 'Cochez les langues Ã  proposer sous forme dâ€™onglets. Si aucune langue nâ€™est cochÃ©e, tous les packs de langue installÃ©s sont proposÃ©s.';
+$string['languages_desc'] = 'Cochez les langues à proposer sous forme d’onglets. Si aucune langue n’est cochée, tous les packs de langue installés sont proposés.';
 $string['pluginname'] = 'Onglets multilingues';
+$string['privacy:metadata'] = 'Le plugin Onglets multilingues ne stocke aucune donnée personnelle.';

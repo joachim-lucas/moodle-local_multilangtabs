@@ -14,18 +14,33 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
+namespace local_multilangtabs\privacy;
+
 /**
- * Version details for the multi-language tabs plugin.
+ * Unit tests for the privacy provider of the multi-language tabs plugin.
  *
  * @package    local_multilangtabs
  * @copyright  2026 Multi-language tabs contributors
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \local_multilangtabs\privacy\provider
  */
+final class privacy_provider_test extends \advanced_testcase {
+    /**
+     * The plugin stores no personal data, so its provider only has to state so.
+     */
+    public function test_provider_is_a_null_provider(): void {
+        $this->assertTrue(
+            is_subclass_of(provider::class, \core_privacy\local\metadata\null_provider::class)
+        );
+    }
 
-defined('MOODLE_INTERNAL') || die();
+    /**
+     * The reason must point to an existing language string.
+     */
+    public function test_get_reason_returns_a_language_string_id(): void {
+        $reason = provider::get_reason();
 
-$plugin->component = 'local_multilangtabs';
-$plugin->version   = 2026092807; // AAAAMMJJXX, increment it on every change.
-$plugin->requires  = 2024100700; // Moodle 4.5 or later: the output hooks (since 4.4) drive db/hooks.php.
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '0.4.0';
+        $this->assertSame('privacy:metadata', $reason);
+        $this->assertNotEmpty(get_string($reason, 'local_multilangtabs'));
+    }
+}

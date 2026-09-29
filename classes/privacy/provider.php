@@ -15,17 +15,32 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Version details for the multi-language tabs plugin.
+ * Privacy provider of the multi-language tabs plugin.
+ *
+ * The plugin only stores the site level settings held in the config table
+ * and never writes any personal data, hence the null provider.
  *
  * @package    local_multilangtabs
  * @copyright  2026 Multi-language tabs contributors
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace local_multilangtabs\privacy;
 
-$plugin->component = 'local_multilangtabs';
-$plugin->version   = 2026092807; // AAAAMMJJXX, increment it on every change.
-$plugin->requires  = 2024100700; // Moodle 4.5 or later: the output hooks (since 4.4) drive db/hooks.php.
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '0.4.0';
+/**
+ * Privacy provider explaining that the plugin stores no personal data.
+ *
+ * @package    local_multilangtabs
+ * @copyright  2026 Multi-language tabs contributors
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class provider implements \core_privacy\local\metadata\null_provider {
+    /**
+     * Get the language string identifier explaining why no data is stored.
+     *
+     * @return string
+     */
+    public static function get_reason(): string {
+        return 'privacy:metadata';
+    }
+}
