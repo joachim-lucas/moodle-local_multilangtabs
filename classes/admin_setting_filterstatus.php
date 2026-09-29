@@ -42,22 +42,30 @@ class admin_setting_filterstatus extends \admin_setting_heading {
      * @return string The notification, as an HTML string.
      */
     public function output_html($data, $query = '') {
+        global $OUTPUT;
+
         $filterspage = \html_writer::link(new \moodle_url('/admin/filters.php'), get_string('filtersettings', 'admin'));
         $state = filter_status::get_state();
 
         if ($state === filter_status::FILTER_STATUS_OFF) {
-            $html = \core\notification::warning(get_string('multilangfilter_off', 'local_multilangtabs', [
+            $message = get_string('multilangfilter_off', 'local_multilangtabs', [
                 'filterspage' => $filterspage,
-            ]));
+            ]);
+            $level = \core\output\notification::NOTIFY_WARNING;
         } else if ($state === filter_status::FILTER_STATUS_CONTENT_ONLY) {
-            $html = \core\notification::warning(get_string('multilangfilter_content', 'local_multilangtabs', [
+            $message = get_string('multilangfilter_content', 'local_multilangtabs', [
                 'filter' => filter_status::get_active_filter(),
                 'filterspage' => $filterspage,
-            ]));
+            ]);
+            $level = \core\output\notification::NOTIFY_WARNING;
         } else {
-            $html = \core\notification::success(get_string('multilangfilter_ok', 'local_multilangtabs'));
+            $message = get_string('multilangfilter_ok', 'local_multilangtabs');
+            $level = \core\output\notification::NOTIFY_SUCCESS;
         }
 
-        return \html_writer::div($html, 'mlt-filterstatus');
+        // Render the notification inline, right above the settings below, instead of adding it to
+        // the page notification stack (\core\notification::warning/success echo to the page header).
+        $notification = new \core\output\notification($message, $level);
+        return \html_writer::div($OUTPUT->render($notification), 'mlt-filterstatus');
     }
 }
