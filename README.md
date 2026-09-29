@@ -90,6 +90,16 @@ public const EXCLUDED_FIELDS = ['idnumber'];
 public const INCLUDED_FIELDS = ['notes'];
 ```
 
+By default `EXCLUDED_FIELDS` holds the names the core forms have nothing to translate, roughly fifty
+of them, grouped by family in the file: the identification numbers (`idnumber`, `cmidnumber`, ...),
+the accounts and secrets (`username`, `email`, `resourcekey`, ...), the URLs and network addresses
+(`toolurl`, `subnet`, ...), the numbers and thresholds (`popupwidth`, `gradepass`, `cost`, ...) and
+the identification fields of the user profile (`shortname`, `city`, `institution`, ...). A name goes
+there only when every form using it holds a technical value: **a name whose value is shown to the
+users as language content must not be listed**, `name`, `fullname`, `location`, `description`,
+`intro`, `summary` and the like keep their tabs. The names are matched on every form of the site,
+whatever the plugin building it, so an ambiguous name like `url` is excluded from the tabs everywhere.
+
 The second level is the two textareas at the bottom of the plugin settings, *Fields to include* and
 *Fields to exclude*, with one name per line or separated by commas, `idnumber`, `notes`. What is set
 there is **added to the lists of the code, which always apply**: the settings cannot lift an

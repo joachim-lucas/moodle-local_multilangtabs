@@ -54,18 +54,80 @@ class fields {
     ];
 
     /**
-     * Exclusions set in the code, which always apply whatever the settings hold. To keep a
-     * field untouched on every page of the site, add its name here, for instance to leave an
-     * identification number out of the tabs:
+     * Exclusions set in the code, which always apply whatever the settings hold. The names
+     * below are the ones the core forms have nothing to translate: identification numbers,
+     * account and secret values, addresses of the network and plain numbers, whose value is
+     * never written as human language. A name goes here only when that is true of every form
+     * using it, as the names are matched on every form of the site, whatever the plugin.
      *
-     *     public const EXCLUDED_FIELDS = ['idnumber'];
-     *
-     * The names are those of the form elements, the ones the browser shows in the name
-     * attribute of the field. Empty by default, which excludes nothing.
+     * The fields holding actual content, the ones whose value is shown to the users, must NOT
+     * be listed: name, fullname, shortname when it is a friendly name, location, description,
+     * intro, summary, and so on, which keep their language tabs.
      *
      * @var string[]
      */
-    public const EXCLUDED_FIELDS = [];
+    public const EXCLUDED_FIELDS = [
+        // Identification numbers, of the course, of an activity, of a badge, of an enrolment.
+        'idnumber',
+        'cmidnumber',
+        'platformid',
+        'clientid',
+        'deploymentid',
+        'claimid',
+        'targetcode',
+        // Accounts and secrets, of the user, of an LTI tool, of the MoodleNet backpack.
+        'username',
+        'email',
+        'resourcekey',
+        'secret',
+        'issuercontact',
+        'backpackemail',
+        'backpackemailcanvas',
+        // URLs and network addresses, an LTI launch URL, a SCORM package, an ICS feed.
+        'toolurl',
+        'securetoolurl',
+        'icon',
+        'secureicon',
+        'packageurl',
+        'targeturl',
+        'issuerurl',
+        'backpackweburl',
+        'backpackapiurl',
+        'authenticationrequesturl',
+        'jwksurl',
+        'accesstokenurl',
+        'subnet',
+        'url',
+        // Numbers and thresholds: sizes, positions, minutes, passing grades.
+        'popupwidth',
+        'popupheight',
+        'width',
+        'height',
+        'navpositionleft',
+        'navpositiontop',
+        'blockafter',
+        'warnafter',
+        'entbypage',
+        'timespent',
+        'gradebetterthan',
+        'gradepass',
+        'submissiongradepass',
+        'gradinggradepass',
+        'repeats',
+        'maxenrolled',
+        'cost',
+        'param1',
+        'param2',
+        // Identification fields of the user profile, which Moodle itself never translates.
+        'shortname',
+        'city',
+        'institution',
+        'department',
+        'address',
+        'phone1',
+        'phone2',
+        'version',
+    ];
 
     /**
      * Inclusions set in the code, which always apply whatever the settings hold. The general

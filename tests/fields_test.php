@@ -182,4 +182,37 @@ final class fields_test extends \advanced_testcase {
         $this->assertSame(['notes'], fields::get_included_field_names());
         $this->assertSame(['notes'], fields::get_excluded_field_names());
     }
+
+    /**
+     * Test that the default exclusions are unique lowercase element names.
+     *
+     * @covers \local_multilangtabs\fields::EXCLUDED_FIELDS
+     */
+    public function test_default_exclusions_are_lowercase_and_unique(): void {
+        $this->assertSame(fields::EXCLUDED_FIELDS, array_values(array_unique(fields::EXCLUDED_FIELDS)));
+
+        foreach (fields::EXCLUDED_FIELDS as $name) {
+            $this->assertSame($name, strtolower($name), "Uppercase exclusion: {$name}");
+        }
+    }
+
+    /**
+     * Test that the default exclusions leave the content fields decorated.
+     *
+     * The names of the fields holding a value shown to the users must not be excluded: they are
+     * the very fields the language tabs exist for. Keeping them out of the default list is what
+     * the guard below protects, as an exclusion is matched on every form of the site.
+     *
+     * @covers \local_multilangtabs\fields::EXCLUDED_FIELDS
+     */
+    public function test_default_exclusions_leave_content_alone(): void {
+        $content = ['name', 'fullname', 'location', 'firstpagetitle', 'imagealt', 'messagesubject',
+            'defaultdata', 'issuername', 'imagecaption', 'introeditor', 'summary', 'content',
+            'description', 'notes', 'customint3', 'targetframework'];
+
+        $excluded = array_flip(fields::EXCLUDED_FIELDS);
+        foreach ($content as $name) {
+            $this->assertArrayNotHasKey($name, $excluded, "Content field excluded by default: {$name}");
+        }
+    }
 }
