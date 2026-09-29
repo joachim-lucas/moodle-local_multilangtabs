@@ -91,10 +91,10 @@ final class fields_test extends \advanced_testcase {
     }
 
     /**
-     * Test that no exception is set by default, which keeps the general rule.
+     * Test that no setting-related exception is set by default, which keeps the general rule.
      *
-     * The lists of the constants are empty, and the settings not saved: get_config() returns
-     * false, which leaves the lists of the code untouched rather than replacing them.
+     * The settings are not saved: get_config() returns false, which leaves the lists of the
+     * code untouched rather than replacing them with an empty list.
      *
      * @covers ::get_excluded_field_names
      * @covers ::get_included_field_names
@@ -102,8 +102,8 @@ final class fields_test extends \advanced_testcase {
     public function test_no_exception_by_default(): void {
         $this->resetAfterTest();
 
-        $this->assertSame([], fields::get_excluded_field_names());
-        $this->assertSame([], fields::get_included_field_names());
+        $this->assertSame(fields::EXCLUDED_FIELDS, fields::get_excluded_field_names());
+        $this->assertSame(fields::INCLUDED_FIELDS, fields::get_included_field_names());
     }
 
     /**
@@ -115,7 +115,10 @@ final class fields_test extends \advanced_testcase {
         $this->resetAfterTest();
         set_config('excludedfields', 'idnumber, idnumber2', 'local_multilangtabs');
 
-        $this->assertSame(['idnumber', 'idnumber2'], fields::get_excluded_field_names());
+        $this->assertSame(
+            array_values(array_unique(array_merge(fields::EXCLUDED_FIELDS, ['idnumber', 'idnumber2']))),
+            fields::get_excluded_field_names()
+        );
     }
 
     /**
@@ -127,11 +130,14 @@ final class fields_test extends \advanced_testcase {
         $this->resetAfterTest();
         set_config('includedfields', 'notes', 'local_multilangtabs');
 
-        $this->assertSame(['notes'], fields::get_included_field_names());
+        $this->assertSame(
+            array_merge(fields::INCLUDED_FIELDS, ['notes']),
+            fields::get_included_field_names()
+        );
     }
 
     /**
-     * Test that a setting saved empty excludes nothing.
+     * Test that a setting saved empty excludes nothing beyond the list of the code.
      *
      * @covers ::get_excluded_field_names
      */
@@ -139,7 +145,7 @@ final class fields_test extends \advanced_testcase {
         $this->resetAfterTest();
         set_config('excludedfields', '', 'local_multilangtabs');
 
-        $this->assertSame([], fields::get_excluded_field_names());
+        $this->assertSame(fields::EXCLUDED_FIELDS, fields::get_excluded_field_names());
     }
 
     /**
@@ -157,7 +163,7 @@ final class fields_test extends \advanced_testcase {
         set_config('includedfields', 'notes', 'local_multilangtabs');
 
         $this->assertSame(
-            array_merge(fields::EXCLUDED_FIELDS, ['idnumber', 'notes']),
+            array_values(array_unique(array_merge(fields::EXCLUDED_FIELDS, ['idnumber', 'notes']))),
             fields::get_excluded_field_names()
         );
         $this->assertSame(
@@ -180,7 +186,10 @@ final class fields_test extends \advanced_testcase {
         // Both lists are reported as they are entered, the precedence between them being
         // applied by the AMD module which is the only place the fields are known.
         $this->assertSame(['notes'], fields::get_included_field_names());
-        $this->assertSame(['notes'], fields::get_excluded_field_names());
+        $this->assertSame(
+            array_merge(fields::EXCLUDED_FIELDS, ['notes']),
+            fields::get_excluded_field_names()
+        );
     }
 
     /**
