@@ -39,12 +39,13 @@ $string['inplacetargets_desc'] = 'One target per line, as a "component-itemtype"
 $string['languages'] = 'Available languages';
 $string['languages_desc'] = 'Tick the languages to propose as tabs. When nothing is ticked, all installed language packs are proposed.';
 $string['multilangfilter_content'] = 'The {$a->filter} filter applies to the content only, not to the headings or
-    the other short strings. Set it on "Content and headings" on the {$a->filterspage} page, otherwise titles such
-    as the course name and the activity names may keep showing the raw language marks.';
+    the other short strings. Set it on "Content and headings" on the {$a->filterspage} page if you want the plugin to
+    apply to the headings too (otherwise titles such as the course name and the activity names may keep showing the
+    raw language marks).';
 $string['multilangfilter_off'] = 'No multilanguage filter is active on this site. Without either the "multilang" or
     the "multilang2" filter the language marks are not interpreted, so the tabs do not work. Activate one of them on
     the {$a->filterspage} page.';
 $string['multilangfilter_ok'] = 'Everything is in order: a multilanguage filter is active and applies to the content
-    and the headings, so the language tabs work as expected.';
+    and the headings, so the plugin\'s language tabs will work as expected.';
 $string['pluginname'] = 'Multi-language tabs';
 $string['privacy:metadata'] = 'The multi-language tabs plugin does not store any personal data.';
