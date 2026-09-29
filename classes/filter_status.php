@@ -52,7 +52,8 @@ class filter_status {
         $states = filter_get_global_states();
 
         foreach ([languages::FILTER_MLANG2, languages::FILTER_MLANG] as $filter) {
-            if (isset($states[$filter]) && $states[$filter]->active === TEXTFILTER_ON) {
+            // The active column comes back as a string from the database, hence the cast.
+            if (isset($states[$filter]) && (int) $states[$filter]->active === TEXTFILTER_ON) {
                 return $filter;
             }
         }
