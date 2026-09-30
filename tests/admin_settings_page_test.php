@@ -32,6 +32,16 @@ final class admin_settings_page_test extends \advanced_testcase {
     ];
 
     /**
+     * Load the administration settings API used by the page under test.
+     */
+    protected function setUp(): void {
+        global $CFG;
+
+        require_once($CFG->libdir . '/adminlib.php');
+        parent::setUp();
+    }
+
+    /**
      * Build the real administration tree and return the settings page of the plugin.
      *
      * The tree is built the way the site does it, so the test also proves that settings.php still
@@ -154,7 +164,7 @@ final class admin_settings_page_test extends \advanced_testcase {
         set_config('inplaceincluded', 'mod_forum-digestoptions', 'local_multilangtabs');
         set_config('languages', 'en', 'local_multilangtabs');
 
-        // admin_get_root() is what admin_write_settings() looks the settings up in.
+        // Admin_get_root() is what admin_write_settings() looks the settings up in.
         admin_get_root(true);
 
         // Exactly what the form posts: only the languages were touched by the administrator, the
@@ -167,7 +177,7 @@ final class admin_settings_page_test extends \advanced_testcase {
             $this->formname('inplaceexcluded') => 'core_tag-tagname',
         ];
 
-        $this->assertNotEmpty(admin_write_settings($formdata));
+        $this->assertSame(0, admin_write_settings($formdata));
 
         $this->assertSame('en', get_config('local_multilangtabs', 'languages'));
         $this->assertSame('core_tag-tagname', get_config('local_multilangtabs', 'inplaceexcluded'));
@@ -183,7 +193,8 @@ final class admin_settings_page_test extends \advanced_testcase {
 
         $adminroot = new \admin_root(true);
         $adminroot->add('root', new \admin_category('root', 'Root'));
-        $GLOBALS['ADMIN'] = $adminroot;
+        global $ADMIN;
+        $ADMIN = $adminroot;
 
         $page = new \local_multilangtabs\admin_settings_page('testpage', 'Test page');
         $page->add(new \admin_setting_configtext(
@@ -209,7 +220,8 @@ final class admin_settings_page_test extends \advanced_testcase {
 
         $adminroot = new \admin_root(true);
         $adminroot->add('root', new \admin_category('root', 'Root'));
-        $GLOBALS['ADMIN'] = $adminroot;
+        global $ADMIN;
+        $ADMIN = $adminroot;
 
         $page = new \local_multilangtabs\admin_settings_page(
             'testpage',
@@ -244,7 +256,8 @@ final class admin_settings_page_test extends \advanced_testcase {
 
         $adminroot = new \admin_root(true);
         $adminroot->add('root', new \admin_category('root', 'Root'));
-        $GLOBALS['ADMIN'] = $adminroot;
+        global $ADMIN;
+        $ADMIN = $adminroot;
 
         $page = new \local_multilangtabs\admin_settings_page(
             'testpage',

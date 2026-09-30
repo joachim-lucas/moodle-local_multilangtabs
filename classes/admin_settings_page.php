@@ -109,7 +109,7 @@ class admin_settings_page extends \admin_settingpage {
                 $data = $adminroot->errors[$fullname]->data;
             } else {
                 $data = $setting->get_setting();
-                // do not use defaults if settings not available - upgrade settings handles the defaults!
+                // Do not use defaults if settings not available - upgrade settings handles the defaults!
             }
             // The disclosure opens on the first folded setting, and closes on the setting which
             // follows the run, so that the settings added after it stay outside. The two flags
@@ -118,12 +118,12 @@ class admin_settings_page extends \admin_settingpage {
                 $return .= $this->output_fold_start();
                 $isopen = true;
             }
-            $return .= $setting->output_html($data);
             if ($isopen && !array_key_exists($fullname, $folded)) {
                 $return .= $this->output_fold_end();
                 $isopen = false;
                 $foldedalready = true;
             }
+            $return .= $setting->output_html($data);
         }
         if ($isopen) {
             $return .= $this->output_fold_end();
