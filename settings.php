@@ -27,12 +27,27 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once(__DIR__ . '/classes/admin_settings_page.php');
+
 use local_multilangtabs\admin_setting_filterstatus;
+use local_multilangtabs\admin_settings_page;
 
 if ($hassiteconfig) {
-    $settings = new admin_settingpage(
+    // The four lists below only matter in an unusual case, so they are folded away. They stay in
+    // the form, which is why saving the page cannot drop their value.
+    $folded = [
+        'local_multilangtabs/includedfields',
+        'local_multilangtabs/excludedfields',
+        'local_multilangtabs/inplaceincluded',
+        'local_multilangtabs/inplaceexcluded',
+    ];
+
+    $settings = new admin_settings_page(
         'local_multilangtabs',
-        get_string('pluginname', 'local_multilangtabs')
+        get_string('pluginname', 'local_multilangtabs'),
+        $folded,
+        get_string('advancedsettings', 'local_multilangtabs'),
+        get_string('advancedsettings_desc', 'local_multilangtabs')
     );
 
     if ($ADMIN->fulltree) {
@@ -86,6 +101,47 @@ if ($hassiteconfig) {
             get_string('inplaceexcluded_desc', 'local_multilangtabs'),
             ''
         ));
+
+        // Fallback for admin themes or cached admin trees which render the standard page class.
+        // The rows remain in the form when moved into the details element, so their values are
+        // still submitted normally.
+        $summary = json_encode(get_string('advancedsettings', 'local_multilangtabs'),
+            JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+        $PAGE->requires->js_amd_inline("(function() {
+            const init = function() {
+                if (document.querySelector('.mlt-fold')) {
+                    return;
+                }
+                const ids = [
+                    'admin-includedfields',
+                    'admin-excludedfields',
+                    'admin-inplaceincluded',
+                    'admin-inplaceexcluded'
+                ];
+                const rows = ids.map(function(id) {
+                    return document.getElementById(id);
+                }).filter(function(row) {
+                    return row !== null;
+                });
+                if (!rows.length) {
+                    return;
+                }
+                const details = document.createElement('details');
+                details.className = 'mlt-fold';
+                const summary = document.createElement('summary');
+                summary.textContent = {$summary};
+                details.appendChild(summary);
+                rows[0].parentNode.insertBefore(details, rows[0]);
+                rows.forEach(function(row) {
+                    details.appendChild(row);
+                });
+            };
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();");
     }
 
     $ADMIN->add('localplugins', $settings);

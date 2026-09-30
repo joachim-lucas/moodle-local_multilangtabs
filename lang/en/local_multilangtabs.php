@@ -24,6 +24,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['advancedsettings'] = 'Advanced settings';
+$string['advancedsettings_desc'] = 'Nothing to fill in here for a normal use of the plugin, which already gives
+    language tabs to every text field. The four lists below are only useful in an unusual case: to add the tabs
+    to a field which does not hold a text, or to remove them from a field which would normally get them. Leaving
+    all four lists empty is the expected configuration.';
 $string['excludedfields'] = 'Fields to exclude';
 $string['excludedfields_desc'] = 'Names of the form elements which must not get language tabs, separated by
     commas, for instance "idnumber". Leave the field empty to exclude nothing here. This list is added

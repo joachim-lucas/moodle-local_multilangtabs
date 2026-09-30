@@ -24,6 +24,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['advancedsettings'] = 'Réglages avancés';
+$string['advancedsettings_desc'] = 'Rien à remplir ici dans un usage normal du plugin, qui donne déjà des onglets
+    à tous les champs textuels. Les quatre listes ci-dessous ne servent que dans un cas particulier : ajouter les
+    onglets à un champ qui ne contient pas de texte, ou les retirer d’un champ qui en recevrait normalement. Laisser
+    les quatre listes vides est la configuration attendue.';
 $string['excludedfields'] = 'Champs à exclure';
 $string['excludedfields_desc'] = 'Noms des éléments de formulaire qui ne doivent pas recevoir d’onglets,
     séparés par des virgules, par exemple « idnumber ». Laissez le champ vide pour n’exclure aucun champ

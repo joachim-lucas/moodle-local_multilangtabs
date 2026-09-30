@@ -24,3 +24,23 @@
     vertical-align: middle;
     white-space: nowrap;
 }
+
+/* Disclosure folding the advanced settings of the plugin page. The details element is
+   deliberately left closed on purpose: the point is to tell the administrator that there is
+   nothing to fill in unless they hit an unusual case. */
+.mlt-fold {
+    margin-top: 0.5rem;
+}
+
+.mlt-fold > summary {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.mlt-fold[open] > summary {
+    margin-bottom: 0.5rem;
+}
+
+.mlt-folddesc {
+    margin-bottom: 0.5rem;
+}
