@@ -34,9 +34,16 @@ $string['includedfields_desc'] = 'Noms des éléments de formulaire qui doivent 
     s’ils ne sont ni des éditeurs de texte enrichi ni des champs texte simples, séparés par des virgules,
     par exemple « notes ». Laissez le champ vide pour n’inclure aucun champ ici. Cette liste s’ajoute à
     celle définie dans le code du plugin, classes/fields.php, qui s’applique toujours.';
-$string['inplacetargets'] = 'Champs modifiables sur place';
-$string['inplacetargets_desc'] = 'Une cible par ligne, sous la forme « composant-type », par exemple
-    format_topics-sectionname. Laissez le champ vide pour désactiver les onglets sur les champs modifiables sur place.';
+$string['inplaceexcluded'] = 'Champs modifiables sur place à exclure';
+$string['inplaceexcluded_desc'] = 'Noms des champs modifiables sur place qui ne doivent pas recevoir d’onglets,
+    séparés par des virgules, sous la forme « composant-type », par exemple « core_tag-tagname ». Laissez le
+    champ vide pour n’exclure aucun champ ici. Cette liste s’ajoute à celle définie dans le code du plugin,
+    classes/fields.php, qui s’applique toujours.';
+$string['inplaceincluded'] = 'Champs modifiables sur place à inclure';
+$string['inplaceincluded_desc'] = 'Noms des champs modifiables sur place qui doivent recevoir des onglets même
+    s’ils ne contiennent pas de texte, séparés par des virgules, sous la forme « composant-type », par exemple
+    « mod_forum-digestoptions ». Laissez le champ vide pour n’inclure aucun champ ici. Cette liste s’ajoute à
+    celle définie dans le code du plugin, classes/fields.php, qui s’applique toujours.';
 $string['languages'] = 'Langues disponibles';
 $string['languages_desc'] = 'Cochez les langues à proposer sous forme d’onglets. Si aucune langue n’est cochée, tous les packs de langue installés sont proposés.';
 $string['multilangfilter_content'] = 'Le filtre {$a->filter} ne s’applique qu’aux contenus, pas aux titres ni aux

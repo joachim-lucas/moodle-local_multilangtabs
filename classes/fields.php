@@ -25,8 +25,8 @@ namespace local_multilangtabs;
  * is sent to the AMD module, which then relies on the data-fieldtype attribute Moodle puts on
  * every form element.
  *
- * The policy is one general rule, every rich text editor and every plain text field of the
- * page, narrowed down by exceptions coming from two levels:
+ * The policy is one general rule per kind of field, narrowed down by exceptions coming from
+ * two levels:
  *
  * - the exceptions below, which are set in this file and always apply, as they are a matter
  *   of development rather than of administration;
@@ -36,23 +36,22 @@ namespace local_multilangtabs;
  * A field is decorated when the general rule covers it, or when an inclusion list names it,
  * and when no exclusion list names it. An exclusion therefore always wins over an inclusion.
  *
+ * Two kinds of fields are covered, with one general rule and one pair of exception lists for
+ * each of them:
+ *
+ * - the fields of the forms, every rich text editor and every plain text field, identified by
+ *   the data-fieldtype attribute Moodle puts on every form element;
+ * - the fields edited in place, every element of type text, identified by the component and the
+ *   itemtype Moodle puts on every inplace editable, as a "component-itemtype" pair.
+ *
+ * The types which cannot hold a multilanguage value, a select or a toggle for instance, are
+ * never covered by the general rule, and only an inclusion list can add them back.
+ *
  * @package    local_multilangtabs
  * @copyright  2026 Multi-language tabs contributors
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class fields {
-    /**
-     * Inplace editable targets decorated when the setting is left empty, as component-itemtype pairs.
-     *
-     * @var string[]
-     */
-    public const DEFAULT_INPLACE_TARGETS = [
-        'format_topics-sectionname',
-        'format_topics-sectionnamenl',
-        'format_weeks-sectionname',
-        'format_weeks-sectionnamenl',
-    ];
-
     /**
      * Exclusions set in the code, which always apply whatever the settings hold. The names
      * below are the ones the core forms have nothing to translate: identification numbers,
@@ -144,24 +143,59 @@ class fields {
     public const INCLUDED_FIELDS = [];
 
     /**
-     * Return the inplace editable targets to decorate, as selected by the administrator.
+     * Inplace editables left alone by the code, as "component-itemtype" pairs.
      *
-     * A textarea setting is stored as a raw string, so the value is split on commas, spaces and
-     * line breaks rather than unserialized. Moodle does not store the default value of a setting,
-     * so the fallback below keeps the feature enabled on a site where the setting has never been
-     * saved. get_config() returns false when the setting is absent, and an empty string when the
-     * administrator saved it empty, which disables the inplace editable support altogether.
+     * The general rule covers every inplace editable of type text, which leaves a long list of
+     * targets the tabs make no sense on: the naming of the tools of the site administration,
+     * which is a matter of development rather than of content, the identification numbers and
+     * the plain numbers, and the taxonomy of the tags, whose value is a key rather than a text.
      *
-     * @return string[]
+     * The targets holding a value the users read are not listed and keep their tabs: the name of
+     * a course section and of an activity, the name of a cohort, the name of a question bank
+     * category, the name of a question, the title and the description of a BigBlueButton
+     * recording.
+     *
+     * Only the types holding a text are listed here, as the others, a select or a toggle, are
+     * never covered by the general rule. A third party target is named the same way, as a
+     * "component-itemtype" pair, whatever the plugin.
+     *
+     * @var string[]
      */
-    public static function get_inplace_targets(): array {
-        $value = get_config('local_multilangtabs', 'inplacetargets');
-        if ($value === false) {
-            return self::DEFAULT_INPLACE_TARGETS;
-        }
+    public const EXCLUDED_INPLACE_TARGETS = [
+        // Names of the tools of the site administration.
+        'core_analytics-modelname',
+        'core_customfield-category',
+        'core_reportbuilder-audienceheading',
+        'core_reportbuilder-columnheading',
+        'core_reportbuilder-filterheading',
+        'core_reportbuilder-reportname',
+        'core_reportbuilder-schedulename',
+        'tool_admin_presets-presetname',
+        'tool_usertours-stepname',
+        'tool_usertours-tourdescription',
+        'tool_usertours-tourname',
+        // Identification numbers and plain numbers.
+        'core_cohort-cohortidnumber',
+        'mod_quiz-slotdisplaynumber',
+        // Taxonomy of the tags, whose value is a key rather than a text.
+        'core_tag-tagcollname',
+        'core_tag-tagname',
+    ];
 
-        return self::parse_list($value);
-    }
+    /**
+     * Inplace editables set in the code, which always apply whatever the settings hold.
+     *
+     * The general rule covers every inplace editable of type text, so this is the list to use
+     * for the ones of a type which holds a text nonetheless:
+     *
+     *     public const INCLUDED_INPLACE_TARGETS = ['mod_forum-digestoptions'];
+     *
+     * Targets are named the same way as in EXCLUDED_INPLACE_TARGETS. Empty by default, which
+     * includes nothing beyond the general rule.
+     *
+     * @var string[]
+     */
+    public const INCLUDED_INPLACE_TARGETS = [];
 
     /**
      * Return the names of the fields to exclude from the tabs on every page of the site.
@@ -182,6 +216,27 @@ class fields {
      */
     public static function get_included_field_names(): array {
         return self::merge_with_setting(self::INCLUDED_FIELDS, 'includedfields');
+    }
+
+    /**
+     * Return the inplace editables to leave alone, whichever page they show up on.
+     *
+     * The list of the code comes first, then the one of the settings, so that the settings
+     * cannot be mistaken for a way to lift an exclusion written in the code.
+     *
+     * @return string[] Targets, as 'component-itemtype' pairs, e.g. ['core_tag-tagname'].
+     */
+    public static function get_excluded_inplace_targets(): array {
+        return self::merge_with_setting(self::EXCLUDED_INPLACE_TARGETS, 'inplaceexcluded');
+    }
+
+    /**
+     * Return the inplace editables to decorate even though the general rule does not cover them.
+     *
+     * @return string[] Targets, as 'component-itemtype' pairs, e.g. ['mod_forum-digestoptions'].
+     */
+    public static function get_included_inplace_targets(): array {
+        return self::merge_with_setting(self::INCLUDED_INPLACE_TARGETS, 'inplaceincluded');
     }
 
     /**

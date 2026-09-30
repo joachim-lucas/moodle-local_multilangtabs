@@ -33,9 +33,16 @@ $string['includedfields_desc'] = 'Names of the form elements which must get lang
     neither rich text editors nor plain text fields, separated by commas, for instance "notes". Leave
     the field empty to include nothing here. This list is added to the one set in the code of the
     plugin, classes/fields.php, which always applies.';
-$string['inplacetargets'] = 'In-place editable fields';
-$string['inplacetargets_desc'] = 'One target per line, as a "component-itemtype" pair, for instance
-    format_topics-sectionname. Leave the field empty to disable the language tabs on the fields edited in place.';
+$string['inplaceexcluded'] = 'In-place editable fields to exclude';
+$string['inplaceexcluded_desc'] = 'Names of the fields edited in place which must not get language tabs, separated by
+    commas, as a "component-itemtype" pair, for instance "core_tag-tagname". Leave the field empty to exclude
+    nothing here. This list is added to the one set in the code of the plugin, classes/fields.php, which always
+    applies.';
+$string['inplaceincluded'] = 'In-place editable fields to include';
+$string['inplaceincluded_desc'] = 'Names of the fields edited in place which must get language tabs even though they do
+    not hold a text, separated by commas, as a "component-itemtype" pair, for instance
+    "mod_forum-digestoptions". Leave the field empty to include nothing here. This list is added to the one set in
+    the code of the plugin, classes/fields.php, which always applies.';
 $string['languages'] = 'Available languages';
 $string['languages_desc'] = 'Tick the languages to propose as tabs. When nothing is ticked, all installed language packs are proposed.';
 $string['multilangfilter_content'] = 'The {$a->filter} filter applies to the content only, not to the headings or

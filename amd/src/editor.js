@@ -391,9 +391,13 @@ define(['jquery', 'core/log'], function($, log) {
      * so the DOM has to be observed instead.
      */
 
-    // List of the component-itemtype pairs the tabs are enabled for. It is
-    // provided by the hook callback through init(); empty = feature disabled.
-    let inplaceTargets = [];
+    // Targets decorated even though the general rule does not cover them, as
+    // component-itemtype pairs. Provided by the hook callback through init().
+    let includedInplaceTargets = [];
+
+    // Targets never decorated, which win over the inclusions. Provided by the
+    // hook callback through init().
+    let excludedInplaceTargets = [];
 
     // Names of the form elements decorated even though the general rule does not
     // cover them. It is provided by the hook callback through init().
@@ -488,7 +492,24 @@ define(['jquery', 'core/log'], function($, log) {
     }
 
     /**
+     * Tell whether an inplace editable is left alone by one of the exclusion lists.
+     *
+     * An exclusion always wins over an inclusion, whichever list it comes from.
+     *
+     * @param {String} key Key of the target, as a component-itemtype pair.
+     * @returns {Boolean} True when the target must be left alone.
+     */
+    function isInplaceExcluded(key) {
+        return excludedInplaceTargets.indexOf(key) !== -1;
+    }
+
+    /**
      * Decorate the supported inplace editables found in a freshly added node.
+     *
+     * The general rule is that every inplace editable of type text is decorated, the same way
+     * every editor and every plain text field of a form is. The elements of a type which
+     * cannot hold a text, a select or a toggle, are only decorated when an inclusion list
+     * names them. No inplace editable is decorated when an exclusion list names it.
      *
      * @param {Node} node Node which was just added to the page.
      */
@@ -510,16 +531,17 @@ define(['jquery', 'core/log'], function($, log) {
         $mainelements.each(function() {
             const $mainelement = $(this);
 
-            if ($mainelement.attr('data-type') !== 'text') {
-                return; // Ignore select/toggle: it makes no sense for multilanguage content.
-            }
-
             const key = inplaceKey(
                 $mainelement.attr('data-component'),
                 $mainelement.attr('data-itemtype')
             );
-            if (inplaceTargets.indexOf(key) === -1) {
+            if (isInplaceExcluded(key)) {
                 return;
+            }
+
+            if ($mainelement.attr('data-type') !== 'text' &&
+                    includedInplaceTargets.indexOf(key) === -1) {
+                return; // A select or a toggle, which no inclusion list names.
             }
 
             const $input = $mainelement.find('input');
@@ -566,11 +588,6 @@ define(['jquery', 'core/log'], function($, log) {
                     defaultLang = languages[0].code;
                 }
             }
-            // Without this list of targets, the edit in place support stays
-            // disabled for the whole page.
-            if (params && params.inplaceTargets) {
-                inplaceTargets = params.inplaceTargets;
-            }
             // Both lists hold the exceptions of the site and the ones of the current
             // user, already merged and deduplicated by the hook callback.
             if (params && params.includedFields) {
@@ -578,6 +595,12 @@ define(['jquery', 'core/log'], function($, log) {
             }
             if (params && params.excludedFields) {
                 excludedFieldNames = params.excludedFields;
+            }
+            if (params && params.inplaceIncluded) {
+                includedInplaceTargets = params.inplaceIncluded;
+            }
+            if (params && params.inplaceExcluded) {
+                excludedInplaceTargets = params.inplaceExcluded;
             }
 
             $(document).ready(function() {
@@ -589,11 +612,9 @@ define(['jquery', 'core/log'], function($, log) {
                     });
                     setupFormSubmit();
 
-                    // The observer is only worth setting up when this site
-                    // supports at least one inplace editable target.
-                    if (inplaceTargets.length) {
-                        setupInplaceObserver();
-                    }
+                    // The general rule covers the inplace editables, so there is
+                    // always a target to look for on the page.
+                    setupInplaceObserver();
                 }, 400);
             });
         }

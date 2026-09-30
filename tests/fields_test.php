@@ -53,41 +53,55 @@ final class fields_test extends \advanced_testcase {
     }
 
     /**
-     * Test that the default inplace targets are used as long as the setting is not saved.
+     * Test that no exception related to the inplace editables is set in the settings by default.
      *
-     * @covers ::get_inplace_targets
+     * The settings are not saved: get_config() returns false, which leaves the lists of the
+     * code untouched rather than replacing them with an empty list.
+     *
+     * @covers ::get_excluded_inplace_targets
+     * @covers ::get_included_inplace_targets
      */
-    public function test_get_inplace_targets_default(): void {
+    public function test_no_inplace_exception_by_default(): void {
         $this->resetAfterTest();
 
-        $this->assertSame(fields::DEFAULT_INPLACE_TARGETS, fields::get_inplace_targets());
+        $this->assertSame(fields::EXCLUDED_INPLACE_TARGETS, fields::get_excluded_inplace_targets());
+        $this->assertSame(fields::INCLUDED_INPLACE_TARGETS, fields::get_included_inplace_targets());
     }
 
     /**
-     * Test that the inplace targets are read from the setting.
+     * Test that the inplace targets are read from the settings.
      *
-     * @covers ::get_inplace_targets
+     * @covers ::get_excluded_inplace_targets
+     * @covers ::get_included_inplace_targets
      */
-    public function test_get_inplace_targets_from_settings(): void {
+    public function test_inplace_targets_from_settings(): void {
         $this->resetAfterTest();
-        set_config('inplacetargets', 'format_weeks-sectionname, mod_page-sectionname', 'local_multilangtabs');
+        set_config('inplaceexcluded', 'mod_page-sectionname, qtype_shortanswer-editquestion', 'local_multilangtabs');
+        set_config('inplaceincluded', 'mod_forum-digestoptions', 'local_multilangtabs');
 
         $this->assertSame(
-            ['format_weeks-sectionname', 'mod_page-sectionname'],
-            fields::get_inplace_targets()
+            array_merge(fields::EXCLUDED_INPLACE_TARGETS, ['mod_page-sectionname', 'qtype_shortanswer-editquestion']),
+            fields::get_excluded_inplace_targets()
+        );
+        $this->assertSame(
+            ['mod_forum-digestoptions'],
+            fields::get_included_inplace_targets()
         );
     }
 
     /**
-     * Test that the inplace editable support can be disabled with an empty setting.
+     * Test that an empty inplace setting excludes nothing beyond the list of the code.
      *
-     * @covers ::get_inplace_targets
+     * The general rule covers the inplace editables, which are therefore never disabled the
+     * way a single allow list used to allow it: only the exclusions can leave them alone.
+     *
+     * @covers ::get_excluded_inplace_targets
      */
-    public function test_get_inplace_targets_can_be_disabled(): void {
+    public function test_an_empty_inplace_setting_excludes_nothing(): void {
         $this->resetAfterTest();
-        set_config('inplacetargets', '', 'local_multilangtabs');
+        set_config('inplaceexcluded', '', 'local_multilangtabs');
 
-        $this->assertSame([], fields::get_inplace_targets());
+        $this->assertSame(fields::EXCLUDED_INPLACE_TARGETS, fields::get_excluded_inplace_targets());
     }
 
     /**
@@ -222,6 +236,56 @@ final class fields_test extends \advanced_testcase {
         $excluded = array_flip(fields::EXCLUDED_FIELDS);
         foreach ($content as $name) {
             $this->assertArrayNotHasKey($name, $excluded, "Content field excluded by default: {$name}");
+        }
+    }
+
+    /**
+     * Test that the default inplace exclusions are unique lowercase component-itemtype pairs.
+     *
+     * @covers \local_multilangtabs\fields::EXCLUDED_INPLACE_TARGETS
+     */
+    public function test_default_inplace_exclusions_are_lowercase_and_unique(): void {
+        $this->assertSame(
+            fields::EXCLUDED_INPLACE_TARGETS,
+            array_values(array_unique(fields::EXCLUDED_INPLACE_TARGETS))
+        );
+
+        foreach (fields::EXCLUDED_INPLACE_TARGETS as $target) {
+            $this->assertSame($target, strtolower($target), "Uppercase inplace exclusion: {$target}");
+            $this->assertMatchesRegularExpression(
+                '/^[a-z0-9_]+-[a-z0-9_]+$/',
+                $target,
+                "Inplace exclusion which is not a component-itemtype pair: {$target}"
+            );
+        }
+    }
+
+    /**
+     * Test that the default inplace exclusions leave the content targets alone.
+     *
+     * The general rule now covers every inplace editable of type text, so an exclusion hits
+     * every text the core edits in place. The names and descriptions the users read must not
+     * be in the list, as they are exactly what the language tabs exist for.
+     *
+     * @covers \local_multilangtabs\fields::EXCLUDED_INPLACE_TARGETS
+     */
+    public function test_default_inplace_exclusions_leave_content_alone(): void {
+        $content = [
+            'format_topics-sectionname',
+            'format_topics-sectionnamenl',
+            'format_weeks-sectionname',
+            'format_weeks-sectionnamenl',
+            'core_course-activityname',
+            'core_cohort-cohortname',
+            'qbank_managecategories-categoryname',
+            'qbank_viewquestionname-questionname',
+            'mod_bigbluebuttonbn-recordingname',
+            'mod_bigbluebuttonbn-recordingdescription',
+        ];
+
+        $excluded = array_flip(fields::EXCLUDED_INPLACE_TARGETS);
+        foreach ($content as $target) {
+            $this->assertArrayNotHasKey($target, $excluded, "Content target excluded by default: {$target}");
         }
     }
 }

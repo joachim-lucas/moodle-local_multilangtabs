@@ -47,7 +47,8 @@ class hook_callbacks {
             'format' => $format,
             'includedFields' => fields::get_included_field_names(),
             'excludedFields' => fields::get_excluded_field_names(),
-            'inplaceTargets' => fields::get_inplace_targets(),
+            'inplaceIncluded' => fields::get_included_inplace_targets(),
+            'inplaceExcluded' => fields::get_excluded_inplace_targets(),
         ];
 
         $hook->renderer->get_page()->requires->js_call_amd('local_multilangtabs/editor', 'init', [$params]);

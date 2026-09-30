@@ -64,7 +64,7 @@ Go to *Site administration > Plugins > Local plugins > Multi-language tabs* and 
 to propose as tabs. When nothing is ticked, every installed language pack is proposed. Tabs open on
 the current user language, or on the first ticked language when the user language is not part of the
 selection. The page also holds the *Fields to include* / *Fields to exclude* lists, described below,
-and the *In-place editable fields* list.
+and their *In-place editable fields to include* / *In-place editable fields to exclude* counterparts.
 
 ### Fields decorated with tabs
 
@@ -113,20 +113,52 @@ field, a composite value being named after its element, `intro` for the `intro[t
 
 ### In-place editable fields
 
-The fields edited in place, without opening a form, are set from the plugin settings, as
-`component-itemtype` targets, one per line, for instance `format_topics-sectionname`. The setting
-comes with the section and activity names of the `format_topics` and `format_weeks` course formats.
-Clearing it and saving the settings disables that support altogether.
+The fields edited in place, without opening a form, follow the same policy as the form fields: one
+general rule, and one pair of exception lists per level.
+
+The general rule is that **every inplace editable of type `text`** is decorated, wherever the core
+or a plugin displays it. The targets are named as a `component-itemtype` pair, the pair Moodle puts
+on the element itself, for instance `format_topics-sectionname`. The types which cannot hold a
+multilanguage value, a select or a toggle, are never covered by the general rule.
+
+The exceptions set in the code are, in `classes/fields.php`:
+
+```php
+// Never decorated, whatever the general rule and the inclusion lists say. The taxonomy of the
+// tags is a set of keys rather than a set of texts, and the quiz slot number is a number.
+public const EXCLUDED_INPLACE_TARGETS = ['core_tag-tagname', 'mod_quiz-slotdisplaynumber'];
+
+// Decorated even though the general rule does not cover them, which is the list to use for the
+// inplace editables of a type which holds a text nonetheless.
+public const INCLUDED_INPLACE_TARGETS = ['mod_forum-digestoptions'];
+```
+
+By default `EXCLUDED_INPLACE_TARGETS` holds the targets the tabs make no sense on, grouped by family
+in the file: the naming of the tools of the site administration (`core_analytics-modelname`,
+`core_reportbuilder-reportname`, `tool_usertours-tourname`, ...), the identification numbers and the
+plain numbers (`core_cohort-cohortidnumber`, `mod_quiz-slotdisplaynumber`) and the taxonomy of the
+tags (`core_tag-tagname`, `core_tag-tagcollname`). A target whose value is shown to the users as
+language content must not be listed, so the course section and activity names
+(`format_topics-sectionname`, `core_course-activityname`), the cohort names, the question bank
+category and question names and the BigBlueButton recording names and descriptions keep their tabs.
+
+The two settings at the bottom of the plugin page, *In-place editable fields to include* and
+*In-place editable fields to exclude*, work exactly like the ones of the form fields: what is set
+there is **added to the lists of the code, which always apply**, and an exclusion always wins.
 
 ## Known limitations
 
-* The language tabs of core inplace editable fields cover the section and activity names of the
-  `format_topics` and `format_weeks` course formats by default. Other inplace editable fields are
-  ignored unless they are added to the setting above.
+* The language tabs of core inplace editable fields follow the general rule, so every field edited
+  in place as a text is decorated: the section and activity names of the `format_topics` and
+  `format_weeks` course formats, the cohort names, the question bank category and question names,
+  and the BigBlueButton recording names and descriptions. The targets the tabs make no sense on
+  are excluded in the code, and any other target a plugin adds can be left out through the
+  *In-place editable fields to exclude* setting.
 * The filter is detected on the site as a whole, not per context: enabling it for a single course
   only is not enough for the tabs to appear.
-* Only rich text editors, plain text fields and the plain textareas named in an inclusion list are
-  decorated. The other types of form elements, selects for instance, are left alone.
+* Only rich text editors, plain text fields, the plain textareas named in an inclusion list and the
+  inplace editables of type text are decorated. The other types of form elements, selects for
+  instance, are left alone.
 
 ## Uninstallation
 
