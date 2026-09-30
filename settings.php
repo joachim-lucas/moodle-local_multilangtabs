@@ -90,10 +90,9 @@ if ($hassiteconfig) {
         // Fallback for admin themes or cached admin trees which render the standard page class.
         // The rows remain in the form when moved into the details element, so their values are
         // still submitted normally.
-        $summary = json_encode(get_string('advancedsettings', 'local_multilangtabs'),
-            JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
-        $description = json_encode(get_string('advancedsettings_desc', 'local_multilangtabs'),
-            JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+        $jsonflags = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
+        $summary = json_encode(get_string('advancedsettings', 'local_multilangtabs'), $jsonflags);
+        $description = json_encode(get_string('advancedsettings_desc', 'local_multilangtabs'), $jsonflags);
         $PAGE->requires->js_amd_inline("(function() {
             const init = function() {
                 if (document.querySelector('.mlt-fold')) {
