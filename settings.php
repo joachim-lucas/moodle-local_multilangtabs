@@ -27,27 +27,12 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once(__DIR__ . '/classes/admin_settings_page.php');
-
 use local_multilangtabs\admin_setting_filterstatus;
-use local_multilangtabs\admin_settings_page;
 
 if ($hassiteconfig) {
-    // The four lists below only matter in an unusual case, so they are folded away. They stay in
-    // the form, which is why saving the page cannot drop their value.
-    $folded = [
-        'local_multilangtabs/includedfields',
-        'local_multilangtabs/excludedfields',
-        'local_multilangtabs/inplaceincluded',
-        'local_multilangtabs/inplaceexcluded',
-    ];
-
-    $settings = new admin_settings_page(
+    $settings = new admin_settingpage(
         'local_multilangtabs',
-        get_string('pluginname', 'local_multilangtabs'),
-        $folded,
-        get_string('advancedsettings', 'local_multilangtabs'),
-        get_string('advancedsettings_desc', 'local_multilangtabs')
+        get_string('pluginname', 'local_multilangtabs')
     );
 
     if ($ADMIN->fulltree) {
@@ -107,6 +92,8 @@ if ($hassiteconfig) {
         // still submitted normally.
         $summary = json_encode(get_string('advancedsettings', 'local_multilangtabs'),
             JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+        $description = json_encode(get_string('advancedsettings_desc', 'local_multilangtabs'),
+            JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
         $PAGE->requires->js_amd_inline("(function() {
             const init = function() {
                 if (document.querySelector('.mlt-fold')) {
@@ -131,6 +118,10 @@ if ($hassiteconfig) {
                 const summary = document.createElement('summary');
                 summary.textContent = {$summary};
                 details.appendChild(summary);
+                const description = document.createElement('div');
+                description.className = 'mlt-folddesc';
+                description.textContent = {$description};
+                details.appendChild(description);
                 rows[0].parentNode.insertBefore(details, rows[0]);
                 rows.forEach(function(row) {
                     details.appendChild(row);
