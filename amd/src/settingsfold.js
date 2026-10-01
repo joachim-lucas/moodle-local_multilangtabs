@@ -101,6 +101,8 @@ define(['core/str'], function(str) {
             rows.forEach(function(row) {
                 details.appendChild(row);
             });
+
+            return details;
         });
     }
 
