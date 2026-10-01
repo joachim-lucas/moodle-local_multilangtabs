@@ -1,11 +1,38 @@
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * AMD module turning the multilanguage fields of the page into a set of language tabs.
+ *
+ * The module is inert until init() is called with the languages proposed as tabs, the markup
+ * format the active filter expects and the field policy, all of them sent by the hook callback
+ * classes/hook_callbacks.php. Nothing is hard-coded here: the labels of the tabs are the names
+ * of the languages, so they cannot be guessed.
+ *
+ * @module     local_multilangtabs/editor
+ * @copyright  2026 Multi-language tabs contributors
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 define(['jquery', 'core/log'], function($, log) {
 
-    // Fallback languages and format, overridden by init(params) when the hook provides them.
-    let languages = [
-        {code: 'fr', label: 'Français'},
-        {code: 'en', label: 'English'}
-    ];
-    let defaultLang = 'fr';
+    // Languages and default language, always provided by init(params) from the hook callback,
+    // which reads them from the site settings. Nothing is guessed here: the labels of the tabs
+    // are the names of the languages, so they cannot be hard-coded.
+    let languages = [];
+    let defaultLang = '';
 
     // 'span'  -> compatible with filter_multilang (legacy).
     // 'mlang2' -> compatible with filter_multilang2, recommended for content
@@ -72,7 +99,7 @@ define(['jquery', 'core/log'], function($, log) {
         // content belongs to the default language, rather than silently
         // losing it, which would happen with a field filled in before the
         // plugin was enabled.
-        if (!foundAny && text.trim() !== '') {
+        if (!foundAny && defaultLang && text.trim() !== '') {
             result[defaultLang] = text;
         }
 
