@@ -43,19 +43,16 @@ if ($hassiteconfig) {
         // platform (for instance 'fr' => 'French (fr)').
         $choices = get_string_manager()->get_list_of_translations();
 
-        // Languages checked by default when the administrator has not chosen any yet.
-        $defaults = [];
-        foreach (['fr', 'en'] as $code) {
-            if (isset($choices[$code])) {
-                $defaults[$code] = 1;
-            }
-        }
-
+        // No language is ticked by default, which is what languages::get_codes() falls back
+        // on: every installed language pack. A default listing a few codes would be
+        // misleading rather than convenient, because Moodle never pre-ticks a multicheckbox
+        // from its default: it would only show up in the "Default:" hint of the setting,
+        // while the languages actually proposed stayed the installed ones.
         $settings->add(new admin_setting_configmulticheckbox(
             'local_multilangtabs/languages',
             get_string('languages', 'local_multilangtabs'),
             get_string('languages_desc', 'local_multilangtabs'),
-            $defaults,
+            [],
             $choices
         ));
 
