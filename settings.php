@@ -84,51 +84,11 @@ if ($hassiteconfig) {
             ''
         ));
 
-        // Fallback for admin themes or cached admin trees which render the standard page class.
-        // The rows remain in the form when moved into the details element, so their values are
-        // still submitted normally.
-        $jsonflags = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
-        $summary = json_encode(get_string('advancedsettings', 'local_multilangtabs'), $jsonflags);
-        $description = json_encode(get_string('advancedsettings_desc', 'local_multilangtabs'), $jsonflags);
-        $PAGE->requires->js_amd_inline("(function() {
-            const init = function() {
-                if (document.querySelector('.mlt-fold')) {
-                    return;
-                }
-                const ids = [
-                    'admin-includedfields',
-                    'admin-excludedfields',
-                    'admin-inplaceincluded',
-                    'admin-inplaceexcluded'
-                ];
-                const rows = ids.map(function(id) {
-                    return document.getElementById(id);
-                }).filter(function(row) {
-                    return row !== null;
-                });
-                if (!rows.length) {
-                    return;
-                }
-                const details = document.createElement('details');
-                details.className = 'mlt-fold';
-                const summary = document.createElement('summary');
-                summary.textContent = {$summary};
-                details.appendChild(summary);
-                const description = document.createElement('div');
-                description.className = 'mlt-folddesc';
-                description.textContent = {$description};
-                details.appendChild(description);
-                rows[0].parentNode.insertBefore(details, rows[0]);
-                rows.forEach(function(row) {
-                    details.appendChild(row);
-                });
-            };
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', init);
-            } else {
-                init();
-            }
-        })();");
+        // Fold the four advanced settings into a closed disclosure, to tell the administrator
+        // that there is nothing to fill in unless they hit an unusual case. The module is inert
+        // on the pages which do not render those rows, and leaves the rows in the form when it
+        // moves them, so their values are still submitted normally.
+        $PAGE->requires->js_call_amd('local_multilangtabs/settingsfold', 'init');
     }
 
     $ADMIN->add('localplugins', $settings);
