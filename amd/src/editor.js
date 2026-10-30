@@ -47,8 +47,8 @@ define(['jquery', 'core/log'], function($, log) {
      */
     let fields = {};
 
-    // Prevents a double native submission when the submit event is intercepted.
-    let submitting = false;
+    // (No submit interception anymore: field values are rebuilt in place, so the
+    // native submission keeps its submitter and its client-side validation.)
 
 
     /**
@@ -369,43 +369,53 @@ define(['jquery', 'core/log'], function($, log) {
      * typed in would be lost.
      */
     function setupFormSubmit() {
-        $('form').each(function() {
-            const form = this;
+        // Only the forms which actually contain a decorated field are bound, so
+        // that the plugin never touches a form it has nothing to do with.
+        const forms = new Set();
+        Object.keys(fields).forEach(function(elementId) {
+            const field = fields[elementId];
+            if (!field) {
+                return;
+            }
+            const $form = field.$element.closest('form');
+            if ($form.length) {
+                forms.add($form[0]);
+            }
+        });
 
+        forms.forEach(function(form) {
             if ($(form).data('multilangtabs-submit-ready')) {
                 return;
             }
             $(form).data('multilangtabs-submit-ready', true);
 
             $(form).on('submit.multilangtabs', function(e) {
-                if (submitting) {
+                // A cancel or skip-validation submitter must keep its native
+                // behaviour: do not rewrite the fields, so that is_cancelled(),
+                // the no-submit buttons and the validation result are preserved.
+                const submitter = e.originalEvent ? e.originalEvent.submitter : null;
+                if (submitter &&
+                        (submitter.hasAttribute('data-cancel') ||
+                         submitter.hasAttribute('data-skip-validation'))) {
                     return;
                 }
 
-                // The current TinyMCE content (getContent) has to be read for
-                // every field before the final value is rebuilt: the native
-                // submit is blocked while doing so, then the form is submitted
-                // again by this module.
-                e.preventDefault();
-
+                // Rebuild the full multilanguage value of every decorated field
+                // which belongs to this form, in place. The handler runs before
+                // the browser serialises the form, so the submitter name and the
+                // client-side validation are kept.
                 Object.keys(fields).forEach(function(elementId) {
                     const field = fields[elementId];
-                    if (!field) {
+                    if (!field || field.$element.closest('form')[0] !== form) {
                         return;
                     }
 
-                    // Capture the content currently displayed (active language).
                     field.langData[field.currentLang] =
                         getContent(field.$element, elementId);
 
-                    // Rebuild the full multilanguage content and write it into
-                    // the field, so that Moodle reads it on submission.
                     const fullContent = buildMultilang(field.langData);
                     field.$element.val(fullContent);
                 });
-
-                submitting = true;
-                HTMLFormElement.prototype.submit.call(form);
             });
         });
     }
