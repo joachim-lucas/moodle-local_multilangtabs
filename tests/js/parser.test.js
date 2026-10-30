@@ -72,6 +72,24 @@ describe('parseMultilang / buildMultilang', () => {
         expect(parsed.langData.en).toBe(text);
     });
 
+    test('writes the plain value when a single language is filled and original had no markup', () => {
+        const text = 'Just plain text';
+        const parsed = parseMultilang(text, langs, defaultLang);
+        parsed.langData.en = 'Changed';
+        const rebuilt = buildMultilang(parsed.segments, parsed.langData, langs, 'span');
+        expect(rebuilt).toBe('Changed');
+    });
+
+    test('keeps markup when the original had no markup but two languages are filled', () => {
+        const text = 'Just plain text';
+        const parsed = parseMultilang(text, langs, defaultLang);
+        parsed.langData.en = 'Hello';
+        parsed.langData.fr = 'Bonjour';
+        const rebuilt = buildMultilang(parsed.segments, parsed.langData, langs, 'span');
+        expect(rebuilt).toContain('<span lang="en" class="multilang">Hello</span>');
+        expect(rebuilt).toContain('<span lang="fr" class="multilang">Bonjour</span>');
+    });
+
     test('editing a language updates only that block', () => {
         const text = 'Common <span lang="en" class="multilang">Hello</span> <span lang="fr" class="multilang">Bonjour</span>';
         const parsed = parseMultilang(text, langs, defaultLang);

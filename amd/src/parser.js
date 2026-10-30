@@ -269,6 +269,25 @@
      */
     function buildMultilang(segments, langData, languages, outputFormat) {
         outputFormat = outputFormat || 'span';
+
+        // When the original value carried no language markup and at most one
+        // language ends up filled, write the plain value back instead of
+        // wrapping it, so single-language content (often learner input) is not
+        // polluted with markup.
+        if (segments && segments.length === 1 && segments[0].type === 'lang' &&
+                segments[0].original === null) {
+            const filled = (languages || []).filter(function(lang) {
+                return (langData && langData[lang.code]) ?
+                    String(langData[lang.code]).trim() !== '' : false;
+            });
+            if (filled.length <= 1) {
+                if (filled.length === 0) {
+                    return '';
+                }
+                return String(langData[filled[0].code]).trim();
+            }
+        }
+
         let output = '';
         const emitted = {};
 

@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_multilangtabs';
-$plugin->version   = 2026103002; // AAAAMMJJXX, increment it on every change.
+$plugin->version   = 2026103003; // AAAAMMJJXX, increment it on every change.
 $plugin->requires  = 2024100700; // Moodle 4.5 or later: the output hooks (since 4.4) drive db/hooks.php.
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '0.5.3';
+$plugin->release   = '0.5.4';
