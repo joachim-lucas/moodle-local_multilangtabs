@@ -26,7 +26,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'core/log'], function($, log) {
+define(['jquery', 'core/log', 'local_multilangtabs/parser'], function($, log, parser) {
 
     // Languages and default language, always provided by init(params) from the hook callback,
     // which reads them from the site settings. Nothing is guessed here: the labels of the tabs
@@ -60,79 +60,25 @@ define(['jquery', 'core/log'], function($, log) {
      * @param {String} text Raw content of the field.
      * @returns {Object} Content of each language, indexed by language code.
      */
+    /**
+     * Parse a multilanguage value.
+     *
+     * @param {String} text Raw content.
+     * @returns {Object|null}
+     */
     function parseMultilang(text) {
-        const result = {};
-        languages.forEach(function(lang) {
-            result[lang.code] = '';
-        });
-
-        if (!text) {
-            return result;
-        }
-
-        let foundAny = false;
-
-        const spanRegex =
-            /<span\b[^>]*\blang\s*=\s*["']([a-z0-9_-]+)["'][^>]*>([\s\S]*?)<\/span>/gi;
-
-        let match;
-        while ((match = spanRegex.exec(text)) !== null) {
-            const langCode = match[1].toLowerCase();
-            if (result.hasOwnProperty(langCode)) {
-                result[langCode] = match[2];
-                foundAny = true;
-            }
-        }
-
-        if (!foundAny) {
-            const mlangRegex = /\{mlang\s+([a-z0-9_-]+)\}([\s\S]*?)\{mlang\}/gi;
-            while ((match = mlangRegex.exec(text)) !== null) {
-                const langCode = match[1].toLowerCase();
-                if (result.hasOwnProperty(langCode)) {
-                    result[langCode] = match[2];
-                    foundAny = true;
-                }
-            }
-        }
-
-        // No multilanguage syntax found: assume that the whole existing
-        // content belongs to the default language, rather than silently
-        // losing it, which would happen with a field filled in before the
-        // plugin was enabled.
-        if (!foundAny && defaultLang && text.trim() !== '') {
-            result[defaultLang] = text;
-        }
-
-        return result;
+        return parser.parseMultilang(text, languages, defaultLang);
     }
 
-
     /**
-     * Rebuild the complete multilanguage content in the format actually expected by the filter
-     * which is enabled on the server.
+     * Rebuild the multilanguage content using the site format.
      *
-     * @param {Object} data Content of each language, indexed by language code.
-     * @returns {String} The value to store in the field.
+     * @param {Array} segments Ordered segments.
+     * @param {Object} langData Edited content per language.
+     * @returns {String}
      */
-    function buildMultilang(data) {
-        let output = '';
-
-        languages.forEach(function(lang) {
-            const val = data[lang.code] ? data[lang.code].trim() : '';
-            if (val === '') {
-                return;
-            }
-
-            if (outputFormat === 'mlang2') {
-                output += '\n{mlang ' + lang.code + '}\n' + val + '\n{mlang}\n';
-            } else {
-                output += '<span lang="' + lang.code + '" class="multilang">' +
-                    val +
-                    '</span>';
-            }
-        });
-
-        return output;
+    function buildMultilang(segments, langData) {
+        return parser.buildMultilang(segments, langData, languages, outputFormat);
     }
 
 
@@ -294,10 +240,17 @@ define(['jquery', 'core/log'], function($, log) {
 
         const rawContent = $element.val();
 
+        const parsed = parseMultilang(rawContent);
+        if (!parsed) {
+            // The value cannot be parsed without loss: leave the field undecorated.
+            return;
+        }
+
         const field = {
             $element: $element,
             elementId: elementId,
-            langData: parseMultilang(rawContent),
+            segments: parsed.segments,
+            langData: parsed.langData,
             currentLang: defaultLang
         };
         fields[elementId] = field;
@@ -413,7 +366,7 @@ define(['jquery', 'core/log'], function($, log) {
                     field.langData[field.currentLang] =
                         getContent(field.$element, elementId);
 
-                    const fullContent = buildMultilang(field.langData);
+                    const fullContent = buildMultilang(field.segments, field.langData);
                     field.$element.val(fullContent);
                 });
             });
@@ -465,10 +418,17 @@ define(['jquery', 'core/log'], function($, log) {
         if ($input.data('multilangtabs-inplace-ready')) {
             return;
         }
+
+        const parsed = parseMultilang($mainelement.attr('data-value'));
+        if (!parsed) {
+            return; // Leave this field alone: parsing would lose data.
+        }
+
         $input.data('multilangtabs-inplace-ready', true);
 
         const state = {
-            langData: parseMultilang($mainelement.attr('data-value')),
+            segments: parsed.segments,
+            langData: parsed.langData,
             currentLang: defaultLang
         };
 
@@ -524,7 +484,7 @@ define(['jquery', 'core/log'], function($, log) {
                 return;
             }
             state.langData[state.currentLang] = $input.val();
-            $input.val(buildMultilang(state.langData));
+            $input.val(buildMultilang(state.segments, state.langData));
         });
     }
 
