@@ -40,10 +40,16 @@ class languages {
      * @return string|null 'mlang2', 'span', or null when no multilanguage filter is available.
      */
     public static function get_format(): ?string {
-        if (filter_is_enabled(self::FILTER_MLANG2)) {
+        // A filter set to "Off, but available" is not actually running, so the
+        // tabs must not load: the markup they produce would never be interpreted.
+        // filter_status::get_active_filter() requires TEXTFILTER_ON, the same
+        // test the settings page uses, so both stay in agreement.
+        $active = filter_status::get_active_filter();
+
+        if ($active === self::FILTER_MLANG2) {
             return 'mlang2';
         }
-        if (filter_is_enabled(self::FILTER_MLANG)) {
+        if ($active === self::FILTER_MLANG) {
             return 'span';
         }
         return null;
