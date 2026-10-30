@@ -27,7 +27,7 @@
  * @param {Function} factory Factory returning the public API.
  * @returns {void}
  */
-(function (root, factory) {
+(function(root, factory) {
     'use strict';
     if (typeof define === 'function' && define.amd) {
         define(factory);
@@ -36,7 +36,7 @@
     } else {
         root.multilangtabsParser = factory();
     }
-}(this, function () {
+}(this, function() {
     'use strict';
 
     /**
@@ -47,7 +47,7 @@
      * @returns {Boolean}
      */
     function isConfiguredLanguage(code, languages) {
-        return (languages || []).some(function (lang) {
+        return (languages || []).some(function(lang) {
             return lang.code === code;
         });
     }
@@ -118,12 +118,14 @@
      * @param {String} defaultLang Default language code.
      * @returns {Object|null} Parsed data or null when not editable.
      */
-    function parseMultilang(text, languages, defaultLang) {
-        if (text === null || text === undefined) {
-            text = '';
-        }
-        languages = languages || [];
-
+    /**
+     * Scan the text into an ordered list of segments.
+     *
+     * @param {String} text Raw content.
+     * @param {String} defaultLang Default language code.
+     * @returns {Array}
+     */
+    function scanSegments(text, defaultLang) {
         const segments = [];
         let i = 0;
         const n = text.length;
@@ -181,37 +183,52 @@
             segments.push({type: 'text', value: text.slice(last)});
         }
 
-        const hasLang = segments.some(function (s) { return s.type === 'lang'; });
+        const hasLang = segments.some(function(s) {
+            return s.type === 'lang';
+        });
         if (!hasLang && defaultLang && text.trim() !== '') {
             segments.length = 0;
             segments.push({type: 'lang', code: defaultLang, value: text, original: null});
         }
 
+        return segments;
+    }
+
+    /**
+     * Finalise parsing: count blocks and build langData.
+     *
+     * @param {Array} segments Ordered segments.
+     * @param {Array} languages Proposed languages.
+     * @returns {Object|null}
+     */
+    function finalizeParse(segments, languages) {
         const blockCounts = {};
-        (languages || []).forEach(function (lang) { blockCounts[lang.code] = 0; });
-        segments.forEach(function (seg) {
+        (languages || []).forEach(function(lang) {
+            blockCounts[lang.code] = 0;
+        });
+        segments.forEach(function(seg) {
             if (seg.type === 'lang' && Object.prototype.hasOwnProperty.call(blockCounts, seg.code)) {
                 blockCounts[seg.code]++;
             }
         });
 
         let editable = true;
-        Object.keys(blockCounts).forEach(function (code) {
+        Object.keys(blockCounts).forEach(function(code) {
             if (blockCounts[code] > 1) {
                 editable = false;
             }
         });
 
         const langData = {};
-        (languages || []).forEach(function (lang) {
+        (languages || []).forEach(function(lang) {
             langData[lang.code] = '';
         });
 
         if (editable) {
-            (languages || []).forEach(function (lang) {
+            (languages || []).forEach(function(lang) {
                 const code = lang.code;
                 if (blockCounts[code] === 1) {
-                    const seg = segments.find(function (s) {
+                    const seg = segments.find(function(s) {
                         return s.type === 'lang' && s.code === code;
                     });
                     langData[code] = seg ? seg.value : '';
@@ -219,16 +236,28 @@
             });
         }
 
-        // Strict round-trip is intentionally not enforced here, because the output
-        // format (span vs mlang2) may legitimately differ from the input format.
-
         if (!editable) {
             return null;
         }
-
         return {segments: segments, langData: langData, editable: true};
     }
 
+    /**
+     * Parse a multilanguage value into segments.
+     *
+     * @param {String} text Raw content of the field.
+     * @param {Array} languages Proposed languages.
+     * @param {String} defaultLang Default language code.
+     * @returns {Object|null} Parsed data or null when not editable.
+     */
+    function parseMultilang(text, languages, defaultLang) {
+        if (text === null || text === undefined) {
+            text = '';
+        }
+        languages = languages || [];
+        const segments = scanSegments(text, defaultLang);
+        return finalizeParse(segments, languages);
+    }
     /**
      * Rebuild the multilanguage content.
      *
@@ -243,7 +272,7 @@
         let output = '';
         const emitted = {};
 
-        (segments || []).forEach(function (seg) {
+        (segments || []).forEach(function(seg) {
             if (seg.type === 'text') {
                 output += seg.value;
                 return;
@@ -273,7 +302,7 @@
             emitted[code] = true;
         });
 
-        (languages || []).forEach(function (lang) {
+        (languages || []).forEach(function(lang) {
             const code = lang.code;
             if (emitted[code]) {
                 return;
