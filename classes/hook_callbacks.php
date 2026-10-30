@@ -35,6 +35,16 @@ class hook_callbacks {
      * @param before_footer_html_generation $hook
      */
     public static function before_footer_html_generation(before_footer_html_generation $hook): void {
+        global $PAGE;
+
+        // The tabs are an editing aid: do not load the module for users who cannot
+        // edit course or site content, so that learner and guest forms are left
+        // untouched and their submitted values are never rewritten.
+        $context = $PAGE->context ?? null;
+        if ($context === null || !has_capability('moodle/course:manageactivities', $context)) {
+            return;
+        }
+
         $format = languages::get_format();
         $codes = languages::get_codes();
         if ($format === null || !$codes) {

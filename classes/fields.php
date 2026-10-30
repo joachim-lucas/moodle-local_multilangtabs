@@ -126,6 +126,13 @@ class fields {
         'phone1',
         'phone2',
         'version',
+        // Names of the user, edited as plain text and never translated as a whole.
+        'firstname',
+        'lastname',
+        'middlename',
+        'alternatename',
+        'firstnamephonetic',
+        'lastnamephonetic',
     ];
 
     /**
