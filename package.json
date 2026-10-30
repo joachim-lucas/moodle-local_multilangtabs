@@ -22,6 +22,9 @@
   },
   "homepage": "https://github.com/joachim-lucas/moodle-local_multilangtabs#readme",
   "devDependencies": {
-    "jest": "^30.5.2"
+    "jest": "^30.5.2",
+    "jest-environment-jsdom": "^30.5.2",
+    "jquery": "^4.0.0",
+    "jsdom": "^30.1.3"
   }
 }

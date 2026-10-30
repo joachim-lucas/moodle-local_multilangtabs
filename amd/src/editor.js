@@ -205,14 +205,14 @@ define(['jquery', 'core/log', 'local_multilangtabs/parser'], function($, log, pa
      * @returns {JQuery} The fields to decorate.
      */
     function findFormFields() {
-        const $fields = $('.felement[data-fieldtype="editor"] textarea, ' +
+        let $fields = $('.felement[data-fieldtype="editor"] textarea, ' +
             '.felement[data-fieldtype="text"] input[type="text"]')
             .filter(function() {
                 return !isEditorInternal($(this)) && !isExcluded($(this));
             });
 
         if (includedFieldNames.length) {
-            $fields.add($('.felement[data-fieldtype="textarea"] textarea')
+            $fields = $fields.add($('.felement[data-fieldtype="textarea"] textarea')
                 .filter(function() {
                     const $element = $(this);
 
@@ -570,6 +570,8 @@ define(['jquery', 'core/log', 'local_multilangtabs/parser'], function($, log, pa
 
 
     return {
+        // Exposed for unit testing (DOM-based tests).
+        findFormFields: findFormFields,
         init: function(params) {
             if (params && params.languages) {
                 languages = params.languages;
