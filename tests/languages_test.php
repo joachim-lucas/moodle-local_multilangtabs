@@ -131,6 +131,20 @@ final class languages_test extends \advanced_testcase {
     }
 
     /**
+     * Test that no format is returned when a filter is only available but not active.
+     *
+     * @covers ::get_format
+     */
+    public function test_get_format_when_filter_is_off_but_available(): void {
+        $this->resetAfterTest();
+        $this->disable_all_filters();
+        filter_set_global_state(languages::FILTER_MLANG, TEXTFILTER_OFF);
+        filter_set_applies_to_strings(languages::FILTER_MLANG, true);
+
+        $this->assertNull(languages::get_format());
+    }
+
+    /**
      * Test that the syntax of the multi block filter is preferred when both filters are available.
      *
      * @covers ::get_format
